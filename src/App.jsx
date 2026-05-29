@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   gate1,
   gate2,
@@ -16,6 +16,12 @@ import {
   getGate2aOptions,
   shouldShowGate2A,
 } from './gateData.js'
+import {
+  computeS6BehaviorAvoidanceFlag,
+  computeSignedWithoutReview,
+  getS6QuestionById,
+  getVisibleS6QuestionIds,
+} from './section6Data.js'
 import './App.css'
 
 function Gate1Screen({ stage_v35, setStage_v35, onContinue }) {
@@ -809,12 +815,136 @@ function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue })
   )
 }
 
-function CompletionScreen() {
+function CompletionScreen({ showS6Continue = false, onContinueToS6 }) {
   return (
     <main className="gate">
       <p className="gate__question">
         Your profile is saved. The Diagnostic is ready to begin.
       </p>
+      {showS6Continue ? (
+        <button
+          type="button"
+          className="gate__next gate__next--active"
+          aria-disabled={false}
+          onClick={onContinueToS6}
+        >
+          Continue to Section 6
+        </button>
+      ) : null}
+    </main>
+  )
+}
+
+function S6QuestionScreen({ question, mode, value, setValue, onContinue }) {
+  const [showContinueError, setShowContinueError] = useState(false)
+  const questionId = `s6-${question.id}-question`
+
+  function handleSelect(optionValue) {
+    setValue(optionValue)
+    setShowContinueError(false)
+  }
+
+  function handleToggle(optionValue) {
+    setValue((prev) => {
+      if (prev.includes(optionValue)) {
+        return prev.filter((v) => v !== optionValue)
+      }
+      return [...prev, optionValue]
+    })
+    setShowContinueError(false)
+  }
+
+  function handleNext() {
+    const hasSelection =
+      mode === 'multi' ? value.length > 0 : Boolean(value)
+    if (!hasSelection) {
+      setShowContinueError(true)
+      return
+    }
+    setShowContinueError(false)
+    onContinue()
+  }
+
+  const hasSelection = mode === 'multi' ? value.length > 0 : Boolean(value)
+
+  return (
+    <main className="gate">
+      <h1 id={questionId} className="gate__question">
+        {question.question}
+      </h1>
+      {question.helper ? (
+        <p className="gate__helper gate__question-helper">{question.helper}</p>
+      ) : null}
+
+      {mode === 'multi' ? (
+        <div className="gate__options" role="group" aria-labelledby={questionId}>
+          {question.options.map((option) => {
+            const isSelected = value.includes(option.value)
+            return (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={isSelected}
+                className={`gate__option${isSelected ? ' gate__option--selected' : ''}`}
+                onClick={() => handleToggle(option.value)}
+              >
+                <span className="gate__option-label">{option.label}</span>
+                {option.helper ? (
+                  <span className="gate__helper">{option.helper}</span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <div
+          className="gate__options"
+          role="radiogroup"
+          aria-labelledby={questionId}
+        >
+          {question.options.map((option) => {
+            const isSelected = value === option.value
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                className={`gate__option${isSelected ? ' gate__option--selected' : ''}`}
+                onClick={() => handleSelect(option.value)}
+              >
+                <span className="gate__option-label">{option.label}</span>
+                {option.helper ? (
+                  <span className="gate__helper">{option.helper}</span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {showContinueError && !hasSelection ? (
+        <p className="gate__helper" role="alert">
+          Please choose an answer to continue.
+        </p>
+      ) : null}
+
+      <button
+        type="button"
+        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
+        aria-disabled={!hasSelection}
+        onClick={handleNext}
+      >
+        Next
+      </button>
+    </main>
+  )
+}
+
+function S6SectionCompleteScreen() {
+  return (
+    <main className="gate">
+      <p className="gate__question">Section 6 complete.</p>
     </main>
   )
 }
@@ -1034,6 +1164,113 @@ function App() {
   const [growth_path, setGrowth_path] = useState([])
   const [annual_revenue_range, setAnnual_revenue_range] = useState(null)
   const [recent_events_12mo, setRecent_events_12mo] = useState([])
+  const [s6Step, setS6Step] = useState(0)
+  const [s6_q1_informal_commitments_documented, setS6_q1_informal_commitments_documented] =
+    useState(null)
+  const [s6_q2_avoids_written_agreements, setS6_q2_avoids_written_agreements] =
+    useState(null)
+  const [s6_q3_agreement_source, setS6_q3_agreement_source] = useState([])
+  const [
+    s6_q4_scope_responsibilities_deliverables,
+    setS6_q4_scope_responsibilities_deliverables,
+  ] = useState(null)
+  const [
+    s6_q5_ownership_use_sharing_work_product,
+    setS6_q5_ownership_use_sharing_work_product,
+  ] = useState(null)
+  const [
+    s6_q6_confidentiality_data_sensitive_info,
+    setS6_q6_confidentiality_data_sensitive_info,
+  ] = useState(null)
+  const [
+    s6_q7_responsibility_if_something_goes_wrong,
+    setS6_q7_responsibility_if_something_goes_wrong,
+  ] = useState(null)
+  const [
+    s6_q8_payment_refunds_cancellation_termination,
+    setS6_q8_payment_refunds_cancellation_termination,
+  ] = useState(null)
+  const [s6_q9_supplier_vendor_platform_terms, setS6_q9_supplier_vendor_platform_terms] =
+    useState(null)
+  const [
+    s6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
+    setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
+  ] = useState(null)
+
+  const gateContext = useMemo(
+    () => ({
+      business_models,
+      team_structure,
+      ai_use,
+      recent_events_12mo,
+      structure_orientation,
+      next_moves,
+      growth_path,
+    }),
+    [
+      business_models,
+      team_structure,
+      ai_use,
+      recent_events_12mo,
+      structure_orientation,
+      next_moves,
+      growth_path,
+    ],
+  )
+
+  const visibleS6QuestionIds = useMemo(
+    () => getVisibleS6QuestionIds(gateContext),
+    [gateContext],
+  )
+
+  const signedWithoutReview = useMemo(
+    () => computeSignedWithoutReview(recent_events_12mo),
+    [recent_events_12mo],
+  )
+
+  const S6_BEHAVIOR_AVOIDANCE_FLAG = useMemo(
+    () => computeS6BehaviorAvoidanceFlag(s6_q2_avoids_written_agreements),
+    [s6_q2_avoids_written_agreements],
+  )
+
+  const s6Triggered = useMemo(() => {
+    const includesAny = (arr, values) => values.some((v) => arr.includes(v))
+
+    return (
+      includesAny(next_moves, [
+        'signing_agreement',
+        'seeking_donations_grants_sponsors',
+      ]) ||
+      includesAny(recent_events_12mo, [
+        'signed_without_review',
+        'donor_grant_sponsor_issue',
+      ]) ||
+      includesAny(business_models, [
+        'service',
+        'ecomm_physical',
+        'saas_software_ai',
+        'content_creator',
+        'marketplace_platform',
+        'hardware_connected',
+      ]) ||
+      includesAny(team_structure, [
+        'contractors',
+        'cofounder_partner',
+        'compensated_advisors',
+      ]) ||
+      includesAny(structure_orientation, [
+        'nonprofit',
+        'fiscal_sponsorship',
+        'hybrid_for_profit_nonprofit',
+      ])
+    )
+  }, [
+    business_models,
+    next_moves,
+    recent_events_12mo,
+    structure_orientation,
+    team_structure,
+  ])
 
   function resetAllState() {
     setStage_v35(null)
@@ -1049,7 +1286,93 @@ function App() {
     setGrowth_path([])
     setAnnual_revenue_range(null)
     setRecent_events_12mo([])
+    setS6Step(0)
+    setS6_q1_informal_commitments_documented(null)
+    setS6_q2_avoids_written_agreements(null)
+    setS6_q3_agreement_source([])
+    setS6_q4_scope_responsibilities_deliverables(null)
+    setS6_q5_ownership_use_sharing_work_product(null)
+    setS6_q6_confidentiality_data_sensitive_info(null)
+    setS6_q7_responsibility_if_something_goes_wrong(null)
+    setS6_q8_payment_refunds_cancellation_termination(null)
+    setS6_q9_supplier_vendor_platform_terms(null)
+    setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments(null)
     setCurrentGate(1)
+  }
+
+  function getS6QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s6_q1_informal_commitments_documented,
+          setValue: setS6_q1_informal_commitments_documented,
+          mode: 'single',
+        }
+      case 'q2':
+        return {
+          value: s6_q2_avoids_written_agreements,
+          setValue: setS6_q2_avoids_written_agreements,
+          mode: 'single',
+        }
+      case 'q3':
+        return {
+          value: s6_q3_agreement_source,
+          setValue: setS6_q3_agreement_source,
+          mode: 'multi',
+        }
+      case 'q4':
+        return {
+          value: s6_q4_scope_responsibilities_deliverables,
+          setValue: setS6_q4_scope_responsibilities_deliverables,
+          mode: 'single',
+        }
+      case 'q5':
+        return {
+          value: s6_q5_ownership_use_sharing_work_product,
+          setValue: setS6_q5_ownership_use_sharing_work_product,
+          mode: 'single',
+        }
+      case 'q6':
+        return {
+          value: s6_q6_confidentiality_data_sensitive_info,
+          setValue: setS6_q6_confidentiality_data_sensitive_info,
+          mode: 'single',
+        }
+      case 'q7':
+        return {
+          value: s6_q7_responsibility_if_something_goes_wrong,
+          setValue: setS6_q7_responsibility_if_something_goes_wrong,
+          mode: 'single',
+        }
+      case 'q8':
+        return {
+          value: s6_q8_payment_refunds_cancellation_termination,
+          setValue: setS6_q8_payment_refunds_cancellation_termination,
+          mode: 'single',
+        }
+      case 'q9':
+        return {
+          value: s6_q9_supplier_vendor_platform_terms,
+          setValue: setS6_q9_supplier_vendor_platform_terms,
+          mode: 'single',
+        }
+      case 'q10':
+        return {
+          value: s6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
+          setValue: setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
+          mode: 'single',
+        }
+      default:
+        return null
+    }
+  }
+
+  function advanceS6() {
+    if (s6Step < visibleS6QuestionIds.length - 1) {
+      setS6Step((prev) => prev + 1)
+      return
+    }
+    setCurrentGate('s6-complete')
   }
 
   function advanceToGate3() {
@@ -1207,7 +1530,39 @@ function App() {
   }
 
   if (currentGate === 'complete') {
-    return <CompletionScreen />
+    return (
+      <CompletionScreen
+        showS6Continue={s6Triggered}
+        onContinueToS6={() => {
+          setS6Step(0)
+          setCurrentGate('s6')
+        }}
+      />
+    )
+  }
+
+  if (currentGate === 's6') {
+    const currentQuestionId = visibleS6QuestionIds[s6Step]
+    const question = getS6QuestionById(currentQuestionId)
+    const binding = getS6QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S6QuestionScreen
+        question={question}
+        mode={binding.mode}
+        value={binding.value}
+        setValue={binding.setValue}
+        onContinue={advanceS6}
+      />
+    )
+  }
+
+  if (currentGate === 's6-complete') {
+    return <S6SectionCompleteScreen />
   }
 
   return null
