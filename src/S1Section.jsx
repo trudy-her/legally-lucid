@@ -1,10 +1,23 @@
 import { S1_SECTION_HEADER } from './section1Data.js'
+import {
+  ContinueError,
+  QuestionNav,
+  useContinueValidation,
+} from './QuestionNav.jsx'
 
-export function S1QuestionScreen({ question, value, onSelect }) {
+export function S1QuestionScreen({ question, value, onSelect, onContinue, onBack }) {
   const questionId = `s1-${question.id}-question`
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
+  const hasSelection = Boolean(value)
 
   function handleSelect(optionValue) {
     onSelect(optionValue)
+    clearContinueError()
+  }
+
+  function handleNext() {
+    validateAndContinue(hasSelection, onContinue)
   }
 
   return (
@@ -36,6 +49,10 @@ export function S1QuestionScreen({ question, value, onSelect }) {
           )
         })}
       </div>
+
+      <ContinueError show={showContinueError} canNext={hasSelection} />
+
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }

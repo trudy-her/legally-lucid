@@ -79,10 +79,21 @@ export function buildDiagnosticContext(state) {
     tags.add(state.s1_q2_current_structure)
   }
 
+  const s3_q1 = state.s3_q1_offer_type ?? []
+  const s3_q6 = state.s3_q6_paid_free_beta_pilot_trial_status ?? []
+  for (const value of s3_q1) {
+    tags.add(value)
+  }
+  for (const value of s3_q6) {
+    tags.add(value)
+  }
+
   return {
     tags,
     diagnosticStoppedAtBoundary: Boolean(state.diagnosticStoppedAtBoundary),
     s1_q2_current_structure: state.s1_q2_current_structure ?? null,
+    s3_q1_offer_type: s3_q1,
+    s3_q6_paid_free_beta_pilot_trial_status: s3_q6,
     s2_q1_public_names_brands_products_programs:
       state.s2_q1_public_names_brands_products_programs ?? null,
     s2_q5_creator_source_awareness: state.s2_q5_creator_source_awareness ?? null,

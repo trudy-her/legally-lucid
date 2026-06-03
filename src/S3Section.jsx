@@ -1,4 +1,4 @@
-import { S2_SECTION_HEADER, getS2GroupLabel } from './section2Data.js'
+import { S3_SECTION_HEADER, getS3GroupLabel } from './section3Data.js'
 import {
   ContinueError,
   MultiSelectHint,
@@ -6,7 +6,7 @@ import {
   useContinueValidation,
 } from './QuestionNav.jsx'
 
-export function S2QuestionScreen({
+export function S3QuestionScreen({
   question,
   value,
   onSelect,
@@ -14,8 +14,8 @@ export function S2QuestionScreen({
   onContinue,
   onBack,
 }) {
-  const questionId = `s2-${question.id}-question`
-  const groupLabel = getS2GroupLabel(question.id)
+  const questionId = `s3-${question.id}-question`
+  const groupLabel = getS3GroupLabel(question.id)
   const isMulti = question.mode === 'multi'
   const { showContinueError, validateAndContinue, clearContinueError } =
     useContinueValidation()
@@ -37,7 +37,7 @@ export function S2QuestionScreen({
 
   return (
     <main className="gate">
-      <p className="gate__section-header">{S2_SECTION_HEADER}</p>
+      <p className="gate__section-header">{S3_SECTION_HEADER}</p>
 
       {groupLabel ? (
         <p className="gate__group-header">{groupLabel}</p>
@@ -97,11 +97,11 @@ export function S2QuestionScreen({
   )
 }
 
-export function S2SectionCompleteScreen() {
+export function S3SectionCompleteScreen() {
   return (
     <main className="gate">
-      <p className="gate__section-header">{S2_SECTION_HEADER}</p>
-      <p className="gate__question">Section 2 complete.</p>
+      <p className="gate__section-header">{S3_SECTION_HEADER}</p>
+      <p className="gate__question">Section 3 complete.</p>
     </main>
   )
 }

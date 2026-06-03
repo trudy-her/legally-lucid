@@ -25,26 +25,30 @@ import {
 import { buildDiagnosticContext } from './diagnosticTags.js'
 import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
 import { getS2QuestionById, getVisibleS2QuestionIds } from './section2Data.js'
+import { getS3QuestionById, getVisibleS3QuestionIds } from './section3Data.js'
 import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
 import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
+import { S3QuestionScreen, S3SectionCompleteScreen } from './S3Section.jsx'
+import {
+  ContinueError,
+  MultiSelectHint,
+  QuestionNav,
+  useContinueValidation,
+} from './QuestionNav.jsx'
 import './App.css'
 
 function Gate1Screen({ stage_v35, setStage_v35, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate1-question'
 
   function handleSelect(value) {
     setStage_v35(value)
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (!stage_v35) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(Boolean(stage_v35), onContinue)
   }
 
   const hasSelection = Boolean(stage_v35)
@@ -80,26 +84,20 @@ function Gate1Screen({ stage_v35, setStage_v35, onContinue }) {
         })}
       </div>
 
-      {showContinueError && !stage_v35 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav
+        onNext={handleNext}
+        canNext={hasSelection}
+        showBack={false}
+      />
     </main>
   )
 }
 
-function Gate2Screen({ business_models, setBusiness_models, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function Gate2Screen({ business_models, setBusiness_models, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate2-question'
 
   function handleToggle(value) {
@@ -114,16 +112,11 @@ function Gate2Screen({ business_models, setBusiness_models, onContinue }) {
       }
       return [...withoutUnknown, value]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (business_models.length === 0) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(business_models.length > 0, onContinue)
   }
 
   const hasSelection = business_models.length > 0
@@ -134,6 +127,7 @@ function Gate2Screen({ business_models, setBusiness_models, onContinue }) {
         {gate2.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate2.helper}</p>
+      <MultiSelectHint />
 
       <div
         className="gate__options"
@@ -159,20 +153,9 @@ function Gate2Screen({ business_models, setBusiness_models, onContinue }) {
         })}
       </div>
 
-      {showContinueError && business_models.length === 0 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
@@ -182,8 +165,10 @@ function Gate2AScreen({
   primary_model,
   setPrimary_model,
   onContinue,
+  onBack,
 }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate2a-question'
   const options = getGate2aOptions(business_models)
 
@@ -198,16 +183,11 @@ function Gate2AScreen({
 
   function handleSelect(value) {
     setPrimary_model(value)
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (!primary_model) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(Boolean(primary_model), onContinue)
   }
 
   const hasSelection = Boolean(primary_model)
@@ -244,20 +224,9 @@ function Gate2AScreen({
         })}
       </div>
 
-      {showContinueError && !primary_model ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
@@ -266,8 +235,10 @@ function Gate2BScreen({
   structure_orientation,
   setStructure_orientation,
   onContinue,
+  onBack,
 }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate2b-question'
 
   function handleToggle(value) {
@@ -282,16 +253,11 @@ function Gate2BScreen({
       }
       return [...withoutNotSure, value]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (structure_orientation.length === 0) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(structure_orientation.length > 0, onContinue)
   }
 
   const hasSelection = structure_orientation.length > 0
@@ -302,6 +268,7 @@ function Gate2BScreen({
         {gate2b.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate2b.helper}</p>
+      <MultiSelectHint />
 
       <div
         className="gate__options"
@@ -327,26 +294,16 @@ function Gate2BScreen({
         })}
       </div>
 
-      {showContinueError && structure_orientation.length === 0 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate4Screen({ geography, setGeography, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function Gate4Screen({ geography, setGeography, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate4-question'
 
   function handleToggle(value) {
@@ -365,16 +322,11 @@ function Gate4Screen({ geography, setGeography, onContinue }) {
       }
       return [...withoutExclusive, value]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (geography.length === 0) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(geography.length > 0, onContinue)
   }
 
   const hasSelection = geography.length > 0
@@ -385,6 +337,7 @@ function Gate4Screen({ geography, setGeography, onContinue }) {
         {gate4.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate4.helper}</p>
+      <MultiSelectHint />
 
       <div
         className="gate__options"
@@ -410,26 +363,16 @@ function Gate4Screen({ geography, setGeography, onContinue }) {
         })}
       </div>
 
-      {showContinueError && geography.length === 0 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate5Screen({ ai_use, setAi_use, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function Gate5Screen({ ai_use, setAi_use, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate5-question'
 
   function handleToggle(value) {
@@ -447,16 +390,11 @@ function Gate5Screen({ ai_use, setAi_use, onContinue }) {
       }
       return [...withoutExclusive, value]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (ai_use.length === 0) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(ai_use.length > 0, onContinue)
   }
 
   const hasSelection = ai_use.length > 0
@@ -467,6 +405,7 @@ function Gate5Screen({ ai_use, setAi_use, onContinue }) {
         {gate5.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate5.helper}</p>
+      <MultiSelectHint />
 
       <div className="gate__options" role="group" aria-labelledby={questionId}>
         {gate5.options.map((option) => {
@@ -488,26 +427,16 @@ function Gate5Screen({ ai_use, setAi_use, onContinue }) {
         })}
       </div>
 
-      {showContinueError && ai_use.length === 0 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate6Screen({ next_moves, setNext_moves, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function Gate6Screen({ next_moves, setNext_moves, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate6-question'
 
   function handleToggle(value) {
@@ -522,16 +451,11 @@ function Gate6Screen({ next_moves, setNext_moves, onContinue }) {
       }
       return [...withoutGeneralScan, value]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (next_moves.length === 0) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(next_moves.length > 0, onContinue)
   }
 
   const hasSelection = next_moves.length > 0
@@ -542,6 +466,7 @@ function Gate6Screen({ next_moves, setNext_moves, onContinue }) {
         {gate6.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate6.helper}</p>
+      <MultiSelectHint />
 
       <div className="gate__options" role="group" aria-labelledby={questionId}>
         {gate6.options.map((option) => {
@@ -563,40 +488,25 @@ function Gate6Screen({ next_moves, setNext_moves, onContinue }) {
         })}
       </div>
 
-      {showContinueError && next_moves.length === 0 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate7Screen({ sensitive_claims, setSensitive_claims, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function Gate7Screen({ sensitive_claims, setSensitive_claims, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate7-question'
 
   function handleSelect(value) {
     setSensitive_claims(value)
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (!sensitive_claims) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(Boolean(sensitive_claims), onContinue)
   }
 
   const hasSelection = Boolean(sensitive_claims)
@@ -633,25 +543,16 @@ function Gate7Screen({ sensitive_claims, setSensitive_claims, onContinue }) {
         })}
       </div>
 
-      {showContinueError && !sensitive_claims ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate8Screen({ growth_path, setGrowth_path, onContinue }) {
+function Gate8Screen({ growth_path, setGrowth_path, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate8-question'
 
   function handleToggle(value) {
@@ -666,7 +567,14 @@ function Gate8Screen({ growth_path, setGrowth_path, onContinue }) {
       }
       return [...withoutNotSure, value]
     })
+    clearContinueError()
   }
+
+  function handleNext() {
+    validateAndContinue(growth_path.length > 0, onContinue)
+  }
+
+  const hasSelection = growth_path.length > 0
 
   return (
     <main className="gate">
@@ -674,6 +582,7 @@ function Gate8Screen({ growth_path, setGrowth_path, onContinue }) {
         {gate8.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate8.helper}</p>
+      <MultiSelectHint />
 
       <div className="gate__options" role="group" aria-labelledby={questionId}>
         {gate8.options.map((option) => {
@@ -695,24 +604,28 @@ function Gate8Screen({ growth_path, setGrowth_path, onContinue }) {
         })}
       </div>
 
-      <button
-        type="button"
-        className="gate__next gate__next--active"
-        aria-disabled={false}
-        onClick={onContinue}
-      >
-        Next
-      </button>
+      <ContinueError show={showContinueError} canNext={hasSelection} />
+
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate9Screen({ annual_revenue_range, setAnnual_revenue_range, onContinue }) {
+function Gate9Screen({ annual_revenue_range, setAnnual_revenue_range, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate9-question'
 
   function handleSelect(value) {
-    setAnnual_revenue_range((prev) => (prev === value ? null : value))
+    setAnnual_revenue_range(value)
+    clearContinueError()
   }
+
+  function handleNext() {
+    validateAndContinue(Boolean(annual_revenue_range), onContinue)
+  }
+
+  const hasSelection = Boolean(annual_revenue_range)
 
   return (
     <main className="gate">
@@ -746,19 +659,16 @@ function Gate9Screen({ annual_revenue_range, setAnnual_revenue_range, onContinue
         })}
       </div>
 
-      <button
-        type="button"
-        className="gate__next gate__next--active"
-        aria-disabled={false}
-        onClick={onContinue}
-      >
-        Next
-      </button>
+      <ContinueError show={showContinueError} canNext={hasSelection} />
+
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue }) {
+function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate10-question'
 
   function handleToggle(value) {
@@ -778,7 +688,14 @@ function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue })
       }
       return [...withoutExclusive, value]
     })
+    clearContinueError()
   }
+
+  function handleNext() {
+    validateAndContinue(recent_events_12mo.length > 0, onContinue)
+  }
+
+  const hasSelection = recent_events_12mo.length > 0
 
   return (
     <main className="gate">
@@ -787,6 +704,7 @@ function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue })
       </h1>
       <p className="gate__helper gate__question-helper">{gate10.helper}</p>
       <p className="gate__helper gate__optional-label">{gate10.optionalLabel}</p>
+      <MultiSelectHint />
 
       <div className="gate__options" role="group" aria-labelledby={questionId}>
         {gate10.options.map((option) => {
@@ -808,14 +726,9 @@ function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue })
         })}
       </div>
 
-      <button
-        type="button"
-        className="gate__next gate__next--active"
-        aria-disabled={false}
-        onClick={onContinue}
-      >
-        Next
-      </button>
+      <ContinueError show={showContinueError} canNext={hasSelection} />
+
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
@@ -838,13 +751,14 @@ function CompletionScreen({ onContinueToS1 }) {
   )
 }
 
-function S6QuestionScreen({ question, mode, value, setValue, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function S6QuestionScreen({ question, mode, value, setValue, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = `s6-${question.id}-question`
 
   function handleSelect(optionValue) {
     setValue(optionValue)
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleToggle(optionValue) {
@@ -866,18 +780,13 @@ function S6QuestionScreen({ question, mode, value, setValue, onContinue }) {
       }
       return [...prev, optionValue]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
     const hasSelection =
       mode === 'multi' ? value.length > 0 : Boolean(value)
-    if (!hasSelection) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(hasSelection, onContinue)
   }
 
   const hasSelection = mode === 'multi' ? value.length > 0 : Boolean(value)
@@ -890,6 +799,8 @@ function S6QuestionScreen({ question, mode, value, setValue, onContinue }) {
       {question.helper ? (
         <p className="gate__helper gate__question-helper">{question.helper}</p>
       ) : null}
+
+      {mode === 'multi' ? <MultiSelectHint /> : null}
 
       {mode === 'multi' ? (
         <div className="gate__options" role="group" aria-labelledby={questionId}>
@@ -938,20 +849,9 @@ function S6QuestionScreen({ question, mode, value, setValue, onContinue }) {
         </div>
       )}
 
-      {showContinueError && !hasSelection ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
@@ -964,8 +864,9 @@ function S6SectionCompleteScreen() {
   )
 }
 
-function Gate3Screen({ team_structure, setTeam_structure, onContinue }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+function Gate3Screen({ team_structure, setTeam_structure, onContinue, onBack }) {
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate3-question'
 
   function handleToggle(value) {
@@ -980,16 +881,11 @@ function Gate3Screen({ team_structure, setTeam_structure, onContinue }) {
       }
       return [...withoutSolo, value]
     })
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
-    if (team_structure.length === 0) {
-      setShowContinueError(true)
-      return
-    }
-    setShowContinueError(false)
-    onContinue()
+    validateAndContinue(team_structure.length > 0, onContinue)
   }
 
   const hasSelection = team_structure.length > 0
@@ -1000,6 +896,7 @@ function Gate3Screen({ team_structure, setTeam_structure, onContinue }) {
         {gate3.question}
       </h1>
       <p className="gate__helper gate__question-helper">{gate3.helper}</p>
+      <MultiSelectHint />
 
       <div
         className="gate__options"
@@ -1025,20 +922,9 @@ function Gate3Screen({ team_structure, setTeam_structure, onContinue }) {
         })}
       </div>
 
-      {showContinueError && team_structure.length === 0 ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
@@ -1048,21 +934,23 @@ function Gate2CScreen({
   setRegulated_financial_activity,
   onShowBoundary,
   onContinue,
+  onBack,
 }) {
-  const [showContinueError, setShowContinueError] = useState(false)
+  const { showContinueError, validateAndContinue, clearContinueError } =
+    useContinueValidation()
   const questionId = 'gate2c-question'
 
   function handleSelect(value) {
     setRegulated_financial_activity(value)
-    setShowContinueError(false)
+    clearContinueError()
   }
 
   function handleNext() {
     if (!regulated_financial_activity) {
-      setShowContinueError(true)
+      validateAndContinue(false, () => {})
       return
     }
-    setShowContinueError(false)
+    clearContinueError()
     if (
       regulated_financial_activity === 'yes' ||
       regulated_financial_activity === 'not_sure'
@@ -1104,25 +992,14 @@ function Gate2CScreen({
         })}
       </div>
 
-      {showContinueError && !regulated_financial_activity ? (
-        <p className="gate__helper" role="alert">
-          Please choose an answer to continue.
-        </p>
-      ) : null}
+      <ContinueError show={showContinueError} canNext={hasSelection} />
 
-      <button
-        type="button"
-        className={`gate__next${hasSelection ? ' gate__next--active' : ' gate__next--inactive'}`}
-        aria-disabled={!hasSelection}
-        onClick={handleNext}
-      >
-        Next
-      </button>
+      <QuestionNav onBack={onBack} onNext={handleNext} canNext={hasSelection} />
     </main>
   )
 }
 
-function FinancialBoundaryScreen({ onContinue, onStop }) {
+function FinancialBoundaryScreen({ onContinue, onStop, onBack }) {
   const [acknowledged, setAcknowledged] = useState(false)
   const checkboxId = 'financial-boundary-ack'
 
@@ -1159,6 +1036,14 @@ function FinancialBoundaryScreen({ onContinue, onStop }) {
           Stop here
         </button>
       </div>
+
+      {onBack ? (
+        <div className="gate__nav gate__nav--boundary">
+          <button type="button" className="gate__back" onClick={onBack}>
+            Back
+          </button>
+        </div>
+      ) : null}
     </main>
   )
 }
@@ -1266,6 +1151,40 @@ function App() {
   ] = useState([])
   const [s2_q19_post_relationship_asset_use, setS2_q19_post_relationship_asset_use] =
     useState(null)
+  const [s3Step, setS3Step] = useState(0)
+  const [s3_q1_offer_type, setS3_q1_offer_type] = useState([])
+  const [s3_q2_primary_audience_or_recipient, setS3_q2_primary_audience_or_recipient] =
+    useState([])
+  const [s3_q3_offer_description_integrity, setS3_q3_offer_description_integrity] =
+    useState(null)
+  const [s3_q4_deliverables_scope_and_limits, setS3_q4_deliverables_scope_and_limits] =
+    useState(null)
+  const [s3_q5_results_claims_outcomes_promises, setS3_q5_results_claims_outcomes_promises] =
+    useState(null)
+  const [s3_q6_paid_free_beta_pilot_trial_status, setS3_q6_paid_free_beta_pilot_trial_status] =
+    useState([])
+  const [
+    s3_q7_payment_access_refund_cancellation_terms,
+    setS3_q7_payment_access_refund_cancellation_terms,
+  ] = useState(null)
+  const [s3_q8_delivery_dependencies_and_constraints, setS3_q8_delivery_dependencies_and_constraints] =
+    useState(null)
+  const [
+    s3_q9_human_support_service_level_and_response_expectations,
+    setS3_q9_human_support_service_level_and_response_expectations,
+  ] = useState(null)
+  const [
+    s3_q10_licensed_regulated_or_high_scrutiny_offer,
+    setS3_q10_licensed_regulated_or_high_scrutiny_offer,
+  ] = useState(null)
+  const [
+    s3_q11_partner_sponsor_affiliate_or_third_party_delivery,
+    setS3_q11_partner_sponsor_affiliate_or_third_party_delivery,
+  ] = useState(null)
+  const [s3_q12_offer_records_for_diligence_or_review, setS3_q12_offer_records_for_diligence_or_review] =
+    useState(null)
+  const [s3_q13_active_offer_related_issues, setS3_q13_active_offer_related_issues] =
+    useState([])
   const [s6Step, setS6Step] = useState(0)
   const [s6_q1_informal_commitments_documented, setS6_q1_informal_commitments_documented] =
     useState(null)
@@ -1345,6 +1264,8 @@ function App() {
       s2_q13_public_proof_media_permissions,
       s2_q14_licensing_others_to_use_assets,
       s2_q15_using_licensed_or_partner_assets,
+      s3_q1_offer_type,
+      s3_q6_paid_free_beta_pilot_trial_status,
       diagnosticStoppedAtBoundary: false,
       ...overrides,
     }
@@ -1376,6 +1297,8 @@ function App() {
       s2_q13_public_proof_media_permissions,
       s2_q14_licensing_others_to_use_assets,
       s2_q15_using_licensed_or_partner_assets,
+      s3_q1_offer_type,
+      s3_q6_paid_free_beta_pilot_trial_status,
     ],
   )
 
@@ -1386,6 +1309,11 @@ function App() {
 
   const visibleS2QuestionIds = useMemo(
     () => getVisibleS2QuestionIds(diagnosticContext),
+    [diagnosticContext],
+  )
+
+  const visibleS3QuestionIds = useMemo(
+    () => getVisibleS3QuestionIds(diagnosticContext),
     [diagnosticContext],
   )
 
@@ -1488,6 +1416,20 @@ function App() {
     setS2_q17_rights_records_needed_for_next_move(null)
     setS2_q18_active_brand_asset_content_platform_issues([])
     setS2_q19_post_relationship_asset_use(null)
+    setS3Step(0)
+    setS3_q1_offer_type([])
+    setS3_q2_primary_audience_or_recipient([])
+    setS3_q3_offer_description_integrity(null)
+    setS3_q4_deliverables_scope_and_limits(null)
+    setS3_q5_results_claims_outcomes_promises(null)
+    setS3_q6_paid_free_beta_pilot_trial_status([])
+    setS3_q7_payment_access_refund_cancellation_terms(null)
+    setS3_q8_delivery_dependencies_and_constraints(null)
+    setS3_q9_human_support_service_level_and_response_expectations(null)
+    setS3_q10_licensed_regulated_or_high_scrutiny_offer(null)
+    setS3_q11_partner_sponsor_affiliate_or_third_party_delivery(null)
+    setS3_q12_offer_records_for_diligence_or_review(null)
+    setS3_q13_active_offer_related_issues([])
     setS6Step(0)
     setS6_q1_informal_commitments_documented(null)
     setS6_q2_avoids_written_agreements(null)
@@ -1559,17 +1501,23 @@ function App() {
     }
   }
 
-  function handleS1Answer(questionId, optionValue) {
+  function handleS1Select(questionId, optionValue) {
+    const binding = getS1QuestionBinding(questionId)
+    if (!binding) {
+      return
+    }
+    binding.setValue(optionValue)
+  }
+
+  function handleS1Continue(questionId) {
     const binding = getS1QuestionBinding(questionId)
     const question = getS1QuestionById(questionId)
-    if (!binding || !question) {
+    if (!binding || !question || !binding.value) {
       return
     }
 
-    binding.setValue(optionValue)
-
     const nextDiagnosticContext = buildDiagnosticContext(
-      buildDiagnosticState({ [question.field]: optionValue }),
+      buildDiagnosticState({ [question.field]: binding.value }),
     )
     const nextVisibleIds = getVisibleS1QuestionIds(nextDiagnosticContext)
 
@@ -1579,6 +1527,87 @@ function App() {
     }
     setS2Step(0)
     setCurrentGate('s2')
+  }
+
+  function goBackFromS1() {
+    if (s1Step > 0) {
+      setS1Step((prev) => prev - 1)
+      return
+    }
+    setCurrentGate('complete')
+  }
+
+  function goBackFromS2() {
+    if (s2Step > 0) {
+      setS2Step((prev) => prev - 1)
+      return
+    }
+    setS1Step(Math.max(0, visibleS1QuestionIds.length - 1))
+    setCurrentGate('s1')
+  }
+
+  function goBackFromS3() {
+    if (s3Step > 0) {
+      setS3Step((prev) => prev - 1)
+      return
+    }
+    setS2Step(Math.max(0, visibleS2QuestionIds.length - 1))
+    setCurrentGate('s2')
+  }
+
+  function goBackFromS6() {
+    if (s6Step > 0) {
+      setS6Step((prev) => prev - 1)
+      return
+    }
+    setS3Step(Math.max(0, visibleS3QuestionIds.length - 1))
+    setCurrentGate('s3')
+  }
+
+  function goBackFromGate() {
+    switch (currentGate) {
+      case 2:
+        setCurrentGate(1)
+        break
+      case '2a':
+        setCurrentGate(2)
+        break
+      case '2b':
+        setCurrentGate(shouldShowGate2A(business_models) ? '2a' : 2)
+        break
+      case '2c':
+        setCurrentGate('2b')
+        break
+      case 'financial-boundary':
+        setCurrentGate('2c')
+        break
+      case 3:
+        setCurrentGate('2c')
+        break
+      case 4:
+        setCurrentGate(3)
+        break
+      case 5:
+        setCurrentGate(4)
+        break
+      case 6:
+        setCurrentGate(5)
+        break
+      case 7:
+        setCurrentGate(6)
+        break
+      case 8:
+        setCurrentGate(7)
+        break
+      case 9:
+        setCurrentGate(8)
+        break
+      case 10:
+        setCurrentGate(9)
+        break
+      default:
+        break
+    }
   }
 
   function getS2QuestionBinding(questionId) {
@@ -1712,12 +1741,181 @@ function App() {
       setS2Step((prev) => prev + 1)
       return
     }
+    setS3Step(0)
+    setCurrentGate('s3')
+  }
+
+  function getS3QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return { value: s3_q1_offer_type, setValue: setS3_q1_offer_type, mode: 'multi' }
+      case 'q2':
+        return {
+          value: s3_q2_primary_audience_or_recipient,
+          setValue: setS3_q2_primary_audience_or_recipient,
+          mode: 'multi',
+        }
+      case 'q3':
+        return {
+          value: s3_q3_offer_description_integrity,
+          setValue: setS3_q3_offer_description_integrity,
+          mode: 'single',
+        }
+      case 'q4':
+        return {
+          value: s3_q4_deliverables_scope_and_limits,
+          setValue: setS3_q4_deliverables_scope_and_limits,
+          mode: 'single',
+        }
+      case 'q5':
+        return {
+          value: s3_q5_results_claims_outcomes_promises,
+          setValue: setS3_q5_results_claims_outcomes_promises,
+          mode: 'single',
+        }
+      case 'q6':
+        return {
+          value: s3_q6_paid_free_beta_pilot_trial_status,
+          setValue: setS3_q6_paid_free_beta_pilot_trial_status,
+          mode: 'multi',
+        }
+      case 'q7':
+        return {
+          value: s3_q7_payment_access_refund_cancellation_terms,
+          setValue: setS3_q7_payment_access_refund_cancellation_terms,
+          mode: 'single',
+        }
+      case 'q8':
+        return {
+          value: s3_q8_delivery_dependencies_and_constraints,
+          setValue: setS3_q8_delivery_dependencies_and_constraints,
+          mode: 'single',
+        }
+      case 'q9':
+        return {
+          value: s3_q9_human_support_service_level_and_response_expectations,
+          setValue: setS3_q9_human_support_service_level_and_response_expectations,
+          mode: 'single',
+        }
+      case 'q10':
+        return {
+          value: s3_q10_licensed_regulated_or_high_scrutiny_offer,
+          setValue: setS3_q10_licensed_regulated_or_high_scrutiny_offer,
+          mode: 'single',
+        }
+      case 'q11':
+        return {
+          value: s3_q11_partner_sponsor_affiliate_or_third_party_delivery,
+          setValue: setS3_q11_partner_sponsor_affiliate_or_third_party_delivery,
+          mode: 'single',
+        }
+      case 'q12':
+        return {
+          value: s3_q12_offer_records_for_diligence_or_review,
+          setValue: setS3_q12_offer_records_for_diligence_or_review,
+          mode: 'single',
+        }
+      case 'q13':
+        return {
+          value: s3_q13_active_offer_related_issues,
+          setValue: setS3_q13_active_offer_related_issues,
+          mode: 'multi',
+        }
+      default:
+        return null
+    }
+  }
+
+  function advanceAfterS3Answer(question, answerOverride) {
+    const nextDiagnosticContext = buildDiagnosticContext(
+      buildDiagnosticState({ [question.field]: answerOverride }),
+    )
+    const nextVisibleIds = getVisibleS3QuestionIds(nextDiagnosticContext)
+
+    if (s3Step < nextVisibleIds.length - 1) {
+      setS3Step((prev) => prev + 1)
+      return
+    }
     if (s6Triggered) {
       setS6Step(0)
       setCurrentGate('s6')
       return
     }
-    setCurrentGate('s2-complete')
+    setCurrentGate('s3-complete')
+  }
+
+  function handleS3Select(questionId, optionValue) {
+    const binding = getS3QuestionBinding(questionId)
+    const question = getS3QuestionById(questionId)
+    if (!binding || !question || binding.mode !== 'single') {
+      return
+    }
+
+    binding.setValue(optionValue)
+  }
+
+  function handleS3Toggle(questionId, optionValue) {
+    const binding = getS3QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'multi') {
+      return
+    }
+
+    binding.setValue((prev) => {
+      if (questionId === 'q6') {
+        if (optionValue === 'standard_paid_offers_only') {
+          return prev.includes('standard_paid_offers_only')
+            ? []
+            : ['standard_paid_offers_only']
+        }
+
+        const withoutStandardPaid = prev.filter((v) => v !== 'standard_paid_offers_only')
+        if (withoutStandardPaid.includes(optionValue)) {
+          return withoutStandardPaid.filter((v) => v !== optionValue)
+        }
+        return [...withoutStandardPaid, optionValue]
+      }
+
+      if (questionId === 'q13') {
+        if (optionValue === 'no_known_issues') {
+          return prev.includes('no_known_issues') ? [] : ['no_known_issues']
+        }
+
+        if (optionValue === 'not_sure') {
+          return prev.includes('not_sure') ? [] : ['not_sure']
+        }
+
+        const withoutExclusive = prev.filter(
+          (v) => v !== 'no_known_issues' && v !== 'not_sure',
+        )
+        if (withoutExclusive.includes(optionValue)) {
+          return withoutExclusive.filter((v) => v !== optionValue)
+        }
+        return [...withoutExclusive, optionValue]
+      }
+
+      if (prev.includes(optionValue)) {
+        return prev.filter((v) => v !== optionValue)
+      }
+      return [...prev, optionValue]
+    })
+  }
+
+  function handleS3Continue(questionId) {
+    const binding = getS3QuestionBinding(questionId)
+    const question = getS3QuestionById(questionId)
+    if (!binding || !question) {
+      return
+    }
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
+      return
+    }
+
+    advanceAfterS3Answer(question, binding.value)
   }
 
   function handleS2Select(questionId, optionValue) {
@@ -1728,7 +1926,6 @@ function App() {
     }
 
     binding.setValue(optionValue)
-    advanceAfterS2Answer(question, optionValue)
   }
 
   function handleS2Toggle(questionId, optionValue) {
@@ -1759,10 +1956,15 @@ function App() {
   function handleS2Continue(questionId) {
     const binding = getS2QuestionBinding(questionId)
     const question = getS2QuestionById(questionId)
-    if (!binding || !question || binding.mode !== 'multi') {
+    if (!binding || !question) {
       return
     }
-    if (binding.value.length === 0) {
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
       return
     }
 
@@ -1873,6 +2075,7 @@ function App() {
         business_models={business_models}
         setBusiness_models={setBusiness_models}
         onContinue={advanceFromGate2}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1884,6 +2087,7 @@ function App() {
         primary_model={primary_model}
         setPrimary_model={setPrimary_model}
         onContinue={() => setCurrentGate('2b')}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1894,6 +2098,7 @@ function App() {
         structure_orientation={structure_orientation}
         setStructure_orientation={setStructure_orientation}
         onContinue={() => setCurrentGate('2c')}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1905,6 +2110,7 @@ function App() {
         setRegulated_financial_activity={setRegulated_financial_activity}
         onShowBoundary={() => setCurrentGate('financial-boundary')}
         onContinue={advanceToGate3}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1914,6 +2120,7 @@ function App() {
       <FinancialBoundaryScreen
         onContinue={advanceToGate3}
         onStop={resetAllState}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1924,6 +2131,7 @@ function App() {
         team_structure={team_structure}
         setTeam_structure={setTeam_structure}
         onContinue={() => setCurrentGate(4)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1934,6 +2142,7 @@ function App() {
         geography={geography}
         setGeography={setGeography}
         onContinue={() => setCurrentGate(5)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1944,6 +2153,7 @@ function App() {
         ai_use={ai_use}
         setAi_use={setAi_use}
         onContinue={() => setCurrentGate(6)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1954,6 +2164,7 @@ function App() {
         next_moves={next_moves}
         setNext_moves={setNext_moves}
         onContinue={() => setCurrentGate(7)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1964,6 +2175,7 @@ function App() {
         sensitive_claims={sensitive_claims}
         setSensitive_claims={setSensitive_claims}
         onContinue={() => setCurrentGate(8)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1974,6 +2186,7 @@ function App() {
         growth_path={growth_path}
         setGrowth_path={setGrowth_path}
         onContinue={() => setCurrentGate(9)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1984,6 +2197,7 @@ function App() {
         annual_revenue_range={annual_revenue_range}
         setAnnual_revenue_range={setAnnual_revenue_range}
         onContinue={() => setCurrentGate(10)}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -1994,6 +2208,7 @@ function App() {
         recent_events_12mo={recent_events_12mo}
         setRecent_events_12mo={setRecent_events_12mo}
         onContinue={() => setCurrentGate('complete')}
+        onBack={goBackFromGate}
       />
     )
   }
@@ -2022,7 +2237,9 @@ function App() {
       <S1QuestionScreen
         question={question}
         value={binding.value}
-        onSelect={(optionValue) => handleS1Answer(currentQuestionId, optionValue)}
+        onSelect={(optionValue) => handleS1Select(currentQuestionId, optionValue)}
+        onContinue={() => handleS1Continue(currentQuestionId)}
+        onBack={goBackFromS1}
       />
     )
   }
@@ -2047,12 +2264,38 @@ function App() {
         onSelect={(optionValue) => handleS2Select(currentQuestionId, optionValue)}
         onToggle={(optionValue) => handleS2Toggle(currentQuestionId, optionValue)}
         onContinue={() => handleS2Continue(currentQuestionId)}
+        onBack={goBackFromS2}
       />
     )
   }
 
   if (currentGate === 's2-complete') {
     return <S2SectionCompleteScreen />
+  }
+
+  if (currentGate === 's3') {
+    const currentQuestionId = visibleS3QuestionIds[s3Step]
+    const question = getS3QuestionById(currentQuestionId)
+    const binding = getS3QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S3QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS3Select(currentQuestionId, optionValue)}
+        onToggle={(optionValue) => handleS3Toggle(currentQuestionId, optionValue)}
+        onContinue={() => handleS3Continue(currentQuestionId)}
+        onBack={goBackFromS3}
+      />
+    )
+  }
+
+  if (currentGate === 's3-complete') {
+    return <S3SectionCompleteScreen />
   }
 
   if (currentGate === 's6') {
@@ -2071,6 +2314,7 @@ function App() {
         value={binding.value}
         setValue={binding.setValue}
         onContinue={advanceS6}
+        onBack={goBackFromS6}
       />
     )
   }
