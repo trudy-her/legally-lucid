@@ -26,6 +26,24 @@
   }
 }
 
+.gate__group-header {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+@media (prefers-color-scheme: dark) {
+  .gate__group-header {
+    color: var(--text);
+  }
+}
+
 .gate__question {
   font-family: var(--heading);
   font-weight: 500;

@@ -24,7 +24,9 @@ import {
 } from './section6Data.js'
 import { buildDiagnosticContext } from './diagnosticTags.js'
 import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
+import { getS2QuestionById, getVisibleS2QuestionIds } from './section2Data.js'
 import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
+import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
 import './App.css'
 
 function Gate1Screen({ stage_v35, setStage_v35, onContinue }) {
@@ -1200,6 +1202,58 @@ function App() {
     s1_q10_foundation_ready_for_next_move,
     setS1_q10_foundation_ready_for_next_move,
   ] = useState(null)
+  const [s2Step, setS2Step] = useState(0)
+  const [
+    s2_q1_public_names_brands_products_programs,
+    setS2_q1_public_names_brands_products_programs,
+  ] = useState(null)
+  const [s2_q2_similar_name_search_awareness, setS2_q2_similar_name_search_awareness] =
+    useState(null)
+  const [s2_q3_trademark_registration_records, setS2_q3_trademark_registration_records] =
+    useState(null)
+  const [s2_q4_domains_handles_accounts_access, setS2_q4_domains_handles_accounts_access] =
+    useState(null)
+  const [s2_q5_creator_source_awareness, setS2_q5_creator_source_awareness] =
+    useState(null)
+  const [
+    s2_q6_creator_rights_permissions_documented,
+    setS2_q6_creator_rights_permissions_documented,
+  ] = useState(null)
+  const [
+    s2_q7_pre_existing_contributor_work_documented,
+    setS2_q7_pre_existing_contributor_work_documented,
+  ] = useState(null)
+  const [s2_q8_original_content_methods_toolkits, setS2_q8_original_content_methods_toolkits] =
+    useState(null)
+  const [s2_q9_ai_generated_or_assisted_assets, setS2_q9_ai_generated_or_assisted_assets] =
+    useState(null)
+  const [
+    s2_q10_third_party_content_templates_media_research,
+    setS2_q10_third_party_content_templates_media_research,
+  ] = useState(null)
+  const [s2_q11_technical_assets_sources, setS2_q11_technical_assets_sources] =
+    useState(null)
+  const [
+    s2_q12_data_training_prompts_model_outputs_user_data,
+    setS2_q12_data_training_prompts_model_outputs_user_data,
+  ] = useState(null)
+  const [s2_q13_public_proof_media_permissions, setS2_q13_public_proof_media_permissions] =
+    useState(null)
+  const [s2_q14_licensing_others_to_use_assets, setS2_q14_licensing_others_to_use_assets] =
+    useState(null)
+  const [s2_q15_using_licensed_or_partner_assets, setS2_q15_using_licensed_or_partner_assets] =
+    useState(null)
+  const [s2_q16_asset_inventory_storage, setS2_q16_asset_inventory_storage] = useState(null)
+  const [
+    s2_q17_rights_records_needed_for_next_move,
+    setS2_q17_rights_records_needed_for_next_move,
+  ] = useState(null)
+  const [
+    s2_q18_active_brand_asset_content_platform_issues,
+    setS2_q18_active_brand_asset_content_platform_issues,
+  ] = useState([])
+  const [s2_q19_post_relationship_asset_use, setS2_q19_post_relationship_asset_use] =
+    useState(null)
   const [s6Step, setS6Step] = useState(0)
   const [s6_q1_informal_commitments_documented, setS6_q1_informal_commitments_documented] =
     useState(null)
@@ -1254,31 +1308,72 @@ function App() {
     ],
   )
 
+  function buildDiagnosticState(overrides = {}) {
+    return {
+      business_models,
+      team_structure,
+      structure_orientation,
+      next_moves,
+      recent_events_12mo,
+      ai_use,
+      s1_q1_current_stage,
+      s1_q2_current_structure,
+      s2_q1_public_names_brands_products_programs,
+      s2_q2_similar_name_search_awareness,
+      s2_q3_trademark_registration_records,
+      s2_q4_domains_handles_accounts_access,
+      s2_q5_creator_source_awareness,
+      s2_q6_creator_rights_permissions_documented,
+      s2_q7_pre_existing_contributor_work_documented,
+      s2_q8_original_content_methods_toolkits,
+      s2_q9_ai_generated_or_assisted_assets,
+      s2_q10_third_party_content_templates_media_research,
+      s2_q11_technical_assets_sources,
+      s2_q12_data_training_prompts_model_outputs_user_data,
+      s2_q13_public_proof_media_permissions,
+      s2_q14_licensing_others_to_use_assets,
+      s2_q15_using_licensed_or_partner_assets,
+      diagnosticStoppedAtBoundary: false,
+      ...overrides,
+    }
+  }
+
   const diagnosticContext = useMemo(
-    () =>
-      buildDiagnosticContext({
-        business_models,
-        team_structure,
-        structure_orientation,
-        next_moves,
-        recent_events_12mo,
-        s1_q1_current_stage,
-        s1_q2_current_structure,
-        diagnosticStoppedAtBoundary: false,
-      }),
+    () => buildDiagnosticContext(buildDiagnosticState()),
     [
       business_models,
       team_structure,
       structure_orientation,
       next_moves,
       recent_events_12mo,
+      ai_use,
       s1_q1_current_stage,
       s1_q2_current_structure,
+      s2_q1_public_names_brands_products_programs,
+      s2_q2_similar_name_search_awareness,
+      s2_q3_trademark_registration_records,
+      s2_q4_domains_handles_accounts_access,
+      s2_q5_creator_source_awareness,
+      s2_q6_creator_rights_permissions_documented,
+      s2_q7_pre_existing_contributor_work_documented,
+      s2_q8_original_content_methods_toolkits,
+      s2_q9_ai_generated_or_assisted_assets,
+      s2_q10_third_party_content_templates_media_research,
+      s2_q11_technical_assets_sources,
+      s2_q12_data_training_prompts_model_outputs_user_data,
+      s2_q13_public_proof_media_permissions,
+      s2_q14_licensing_others_to_use_assets,
+      s2_q15_using_licensed_or_partner_assets,
     ],
   )
 
   const visibleS1QuestionIds = useMemo(
     () => getVisibleS1QuestionIds(diagnosticContext),
+    [diagnosticContext],
+  )
+
+  const visibleS2QuestionIds = useMemo(
+    () => getVisibleS2QuestionIds(diagnosticContext),
     [diagnosticContext],
   )
 
@@ -1361,6 +1456,26 @@ function App() {
     setS1_q8_fiscal_sponsor_or_partner_structure(null)
     setS1_q9_foundational_tax_finance_identifiers(null)
     setS1_q10_foundation_ready_for_next_move(null)
+    setS2Step(0)
+    setS2_q1_public_names_brands_products_programs(null)
+    setS2_q2_similar_name_search_awareness(null)
+    setS2_q3_trademark_registration_records(null)
+    setS2_q4_domains_handles_accounts_access(null)
+    setS2_q5_creator_source_awareness(null)
+    setS2_q6_creator_rights_permissions_documented(null)
+    setS2_q7_pre_existing_contributor_work_documented(null)
+    setS2_q8_original_content_methods_toolkits(null)
+    setS2_q9_ai_generated_or_assisted_assets(null)
+    setS2_q10_third_party_content_templates_media_research(null)
+    setS2_q11_technical_assets_sources(null)
+    setS2_q12_data_training_prompts_model_outputs_user_data(null)
+    setS2_q13_public_proof_media_permissions(null)
+    setS2_q14_licensing_others_to_use_assets(null)
+    setS2_q15_using_licensed_or_partner_assets(null)
+    setS2_q16_asset_inventory_storage(null)
+    setS2_q17_rights_records_needed_for_next_move(null)
+    setS2_q18_active_brand_asset_content_platform_issues([])
+    setS2_q19_post_relationship_asset_use(null)
     setS6Step(0)
     setS6_q1_informal_commitments_documented(null)
     setS6_q2_avoids_written_agreements(null)
@@ -1441,21 +1556,148 @@ function App() {
 
     binding.setValue(optionValue)
 
-    const nextDiagnosticContext = buildDiagnosticContext({
-      business_models,
-      team_structure,
-      structure_orientation,
-      next_moves,
-      recent_events_12mo,
-      s1_q1_current_stage,
-      s1_q2_current_structure,
-      diagnosticStoppedAtBoundary: false,
-      [question.field]: optionValue,
-    })
+    const nextDiagnosticContext = buildDiagnosticContext(
+      buildDiagnosticState({ [question.field]: optionValue }),
+    )
     const nextVisibleIds = getVisibleS1QuestionIds(nextDiagnosticContext)
 
     if (s1Step < nextVisibleIds.length - 1) {
       setS1Step((prev) => prev + 1)
+      return
+    }
+    setS2Step(0)
+    setCurrentGate('s2')
+  }
+
+  function getS2QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s2_q1_public_names_brands_products_programs,
+          setValue: setS2_q1_public_names_brands_products_programs,
+          mode: 'single',
+        }
+      case 'q2':
+        return {
+          value: s2_q2_similar_name_search_awareness,
+          setValue: setS2_q2_similar_name_search_awareness,
+          mode: 'single',
+        }
+      case 'q3':
+        return {
+          value: s2_q3_trademark_registration_records,
+          setValue: setS2_q3_trademark_registration_records,
+          mode: 'single',
+        }
+      case 'q4':
+        return {
+          value: s2_q4_domains_handles_accounts_access,
+          setValue: setS2_q4_domains_handles_accounts_access,
+          mode: 'single',
+        }
+      case 'q5':
+        return {
+          value: s2_q5_creator_source_awareness,
+          setValue: setS2_q5_creator_source_awareness,
+          mode: 'single',
+        }
+      case 'q6':
+        return {
+          value: s2_q6_creator_rights_permissions_documented,
+          setValue: setS2_q6_creator_rights_permissions_documented,
+          mode: 'single',
+        }
+      case 'q7':
+        return {
+          value: s2_q7_pre_existing_contributor_work_documented,
+          setValue: setS2_q7_pre_existing_contributor_work_documented,
+          mode: 'single',
+        }
+      case 'q8':
+        return {
+          value: s2_q8_original_content_methods_toolkits,
+          setValue: setS2_q8_original_content_methods_toolkits,
+          mode: 'single',
+        }
+      case 'q9':
+        return {
+          value: s2_q9_ai_generated_or_assisted_assets,
+          setValue: setS2_q9_ai_generated_or_assisted_assets,
+          mode: 'single',
+        }
+      case 'q10':
+        return {
+          value: s2_q10_third_party_content_templates_media_research,
+          setValue: setS2_q10_third_party_content_templates_media_research,
+          mode: 'single',
+        }
+      case 'q11':
+        return {
+          value: s2_q11_technical_assets_sources,
+          setValue: setS2_q11_technical_assets_sources,
+          mode: 'single',
+        }
+      case 'q12':
+        return {
+          value: s2_q12_data_training_prompts_model_outputs_user_data,
+          setValue: setS2_q12_data_training_prompts_model_outputs_user_data,
+          mode: 'single',
+        }
+      case 'q13':
+        return {
+          value: s2_q13_public_proof_media_permissions,
+          setValue: setS2_q13_public_proof_media_permissions,
+          mode: 'single',
+        }
+      case 'q14':
+        return {
+          value: s2_q14_licensing_others_to_use_assets,
+          setValue: setS2_q14_licensing_others_to_use_assets,
+          mode: 'single',
+        }
+      case 'q15':
+        return {
+          value: s2_q15_using_licensed_or_partner_assets,
+          setValue: setS2_q15_using_licensed_or_partner_assets,
+          mode: 'single',
+        }
+      case 'q16':
+        return {
+          value: s2_q16_asset_inventory_storage,
+          setValue: setS2_q16_asset_inventory_storage,
+          mode: 'single',
+        }
+      case 'q17':
+        return {
+          value: s2_q17_rights_records_needed_for_next_move,
+          setValue: setS2_q17_rights_records_needed_for_next_move,
+          mode: 'single',
+        }
+      case 'q18':
+        return {
+          value: s2_q18_active_brand_asset_content_platform_issues,
+          setValue: setS2_q18_active_brand_asset_content_platform_issues,
+          mode: 'multi',
+        }
+      case 'q19':
+        return {
+          value: s2_q19_post_relationship_asset_use,
+          setValue: setS2_q19_post_relationship_asset_use,
+          mode: 'single',
+        }
+      default:
+        return null
+    }
+  }
+
+  function advanceAfterS2Answer(question, answerOverride) {
+    const nextDiagnosticContext = buildDiagnosticContext(
+      buildDiagnosticState({ [question.field]: answerOverride }),
+    )
+    const nextVisibleIds = getVisibleS2QuestionIds(nextDiagnosticContext)
+
+    if (s2Step < nextVisibleIds.length - 1) {
+      setS2Step((prev) => prev + 1)
       return
     }
     if (s6Triggered) {
@@ -1463,7 +1705,50 @@ function App() {
       setCurrentGate('s6')
       return
     }
-    setCurrentGate('s1-complete')
+    setCurrentGate('s2-complete')
+  }
+
+  function handleS2Select(questionId, optionValue) {
+    const binding = getS2QuestionBinding(questionId)
+    const question = getS2QuestionById(questionId)
+    if (!binding || !question || binding.mode !== 'single') {
+      return
+    }
+
+    binding.setValue(optionValue)
+    advanceAfterS2Answer(question, optionValue)
+  }
+
+  function handleS2Toggle(questionId, optionValue) {
+    const binding = getS2QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'multi') {
+      return
+    }
+
+    binding.setValue((prev) => {
+      if (optionValue === 'no_known_issues') {
+        return prev.includes('no_known_issues') ? [] : ['no_known_issues']
+      }
+
+      const withoutNoKnown = prev.filter((v) => v !== 'no_known_issues')
+      if (withoutNoKnown.includes(optionValue)) {
+        return withoutNoKnown.filter((v) => v !== optionValue)
+      }
+      return [...withoutNoKnown, optionValue]
+    })
+  }
+
+  function handleS2Continue(questionId) {
+    const binding = getS2QuestionBinding(questionId)
+    const question = getS2QuestionById(questionId)
+    if (!binding || !question || binding.mode !== 'multi') {
+      return
+    }
+    if (binding.value.length === 0) {
+      return
+    }
+
+    advanceAfterS2Answer(question, binding.value)
   }
 
   function getS6QuestionBinding(questionId) {
@@ -1726,6 +2011,30 @@ function App() {
 
   if (currentGate === 's1-complete') {
     return <S1SectionCompleteScreen />
+  }
+
+  if (currentGate === 's2') {
+    const currentQuestionId = visibleS2QuestionIds[s2Step]
+    const question = getS2QuestionById(currentQuestionId)
+    const binding = getS2QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S2QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS2Select(currentQuestionId, optionValue)}
+        onToggle={(optionValue) => handleS2Toggle(currentQuestionId, optionValue)}
+        onContinue={() => handleS2Continue(currentQuestionId)}
+      />
+    )
+  }
+
+  if (currentGate === 's2-complete') {
+    return <S2SectionCompleteScreen />
   }
 
   if (currentGate === 's6') {
