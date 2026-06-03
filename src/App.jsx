@@ -849,6 +849,18 @@ function S6QuestionScreen({ question, mode, value, setValue, onContinue }) {
 
   function handleToggle(optionValue) {
     setValue((prev) => {
+      if (question.id === 'q3') {
+        if (optionValue === 'not_sure') {
+          return prev.includes('not_sure') ? [] : ['not_sure']
+        }
+
+        const withoutNotSure = prev.filter((v) => v !== 'not_sure')
+        if (withoutNotSure.includes(optionValue)) {
+          return withoutNotSure.filter((v) => v !== optionValue)
+        }
+        return [...withoutNotSure, optionValue]
+      }
+
       if (prev.includes(optionValue)) {
         return prev.filter((v) => v !== optionValue)
       }
@@ -1730,11 +1742,17 @@ function App() {
         return prev.includes('no_known_issues') ? [] : ['no_known_issues']
       }
 
-      const withoutNoKnown = prev.filter((v) => v !== 'no_known_issues')
-      if (withoutNoKnown.includes(optionValue)) {
-        return withoutNoKnown.filter((v) => v !== optionValue)
+      if (optionValue === 'not_sure') {
+        return prev.includes('not_sure') ? [] : ['not_sure']
       }
-      return [...withoutNoKnown, optionValue]
+
+      const withoutExclusive = prev.filter(
+        (v) => v !== 'no_known_issues' && v !== 'not_sure',
+      )
+      if (withoutExclusive.includes(optionValue)) {
+        return withoutExclusive.filter((v) => v !== optionValue)
+      }
+      return [...withoutExclusive, optionValue]
     })
   }
 
