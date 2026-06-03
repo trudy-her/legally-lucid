@@ -22,6 +22,9 @@ import {
   getS6QuestionById,
   getVisibleS6QuestionIds,
 } from './section6Data.js'
+import { buildDiagnosticContext } from './diagnosticTags.js'
+import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
+import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
 import './App.css'
 
 function Gate1Screen({ stage_v35, setStage_v35, onContinue }) {
@@ -815,22 +818,20 @@ function Gate10Screen({ recent_events_12mo, setRecent_events_12mo, onContinue })
   )
 }
 
-function CompletionScreen({ showS6Continue = false, onContinueToS6 }) {
+function CompletionScreen({ onContinueToS1 }) {
   return (
     <main className="gate">
       <p className="gate__question">
         Your profile is saved. The Diagnostic is ready to begin.
       </p>
-      {showS6Continue ? (
-        <button
-          type="button"
-          className="gate__next gate__next--active"
-          aria-disabled={false}
-          onClick={onContinueToS6}
-        >
-          Continue to Section 6
-        </button>
-      ) : null}
+      <button
+        type="button"
+        className="gate__next gate__next--active"
+        aria-disabled={false}
+        onClick={onContinueToS1}
+      >
+        Continue to Section 1
+      </button>
     </main>
   )
 }
@@ -1164,6 +1165,41 @@ function App() {
   const [growth_path, setGrowth_path] = useState([])
   const [annual_revenue_range, setAnnual_revenue_range] = useState(null)
   const [recent_events_12mo, setRecent_events_12mo] = useState([])
+  const [s1Step, setS1Step] = useState(0)
+  const [s1_q1_current_stage, setS1_q1_current_stage] = useState(null)
+  const [s1_q2_current_structure, setS1_q2_current_structure] = useState(null)
+  const [
+    s1_q3_foundational_formation_current_status_records,
+    setS1_q3_foundational_formation_current_status_records,
+  ] = useState(null)
+  const [
+    s1_q4_entity_or_person_receives_money_signs_owns,
+    setS1_q4_entity_or_person_receives_money_signs_owns,
+  ] = useState(null)
+  const [
+    s1_q5_ownership_founder_board_roles_documented,
+    setS1_q5_ownership_founder_board_roles_documented,
+  ] = useState(null)
+  const [
+    s1_q6_separation_business_personal_related_projects,
+    setS1_q6_separation_business_personal_related_projects,
+  ] = useState(null)
+  const [
+    s1_q7_multiple_brands_entities_projects,
+    setS1_q7_multiple_brands_entities_projects,
+  ] = useState(null)
+  const [
+    s1_q8_fiscal_sponsor_or_partner_structure,
+    setS1_q8_fiscal_sponsor_or_partner_structure,
+  ] = useState(null)
+  const [
+    s1_q9_foundational_tax_finance_identifiers,
+    setS1_q9_foundational_tax_finance_identifiers,
+  ] = useState(null)
+  const [
+    s1_q10_foundation_ready_for_next_move,
+    setS1_q10_foundation_ready_for_next_move,
+  ] = useState(null)
   const [s6Step, setS6Step] = useState(0)
   const [s6_q1_informal_commitments_documented, setS6_q1_informal_commitments_documented] =
     useState(null)
@@ -1216,6 +1252,34 @@ function App() {
       next_moves,
       growth_path,
     ],
+  )
+
+  const diagnosticContext = useMemo(
+    () =>
+      buildDiagnosticContext({
+        business_models,
+        team_structure,
+        structure_orientation,
+        next_moves,
+        recent_events_12mo,
+        s1_q1_current_stage,
+        s1_q2_current_structure,
+        diagnosticStoppedAtBoundary: false,
+      }),
+    [
+      business_models,
+      team_structure,
+      structure_orientation,
+      next_moves,
+      recent_events_12mo,
+      s1_q1_current_stage,
+      s1_q2_current_structure,
+    ],
+  )
+
+  const visibleS1QuestionIds = useMemo(
+    () => getVisibleS1QuestionIds(diagnosticContext),
+    [diagnosticContext],
   )
 
   const visibleS6QuestionIds = useMemo(
@@ -1286,6 +1350,17 @@ function App() {
     setGrowth_path([])
     setAnnual_revenue_range(null)
     setRecent_events_12mo([])
+    setS1Step(0)
+    setS1_q1_current_stage(null)
+    setS1_q2_current_structure(null)
+    setS1_q3_foundational_formation_current_status_records(null)
+    setS1_q4_entity_or_person_receives_money_signs_owns(null)
+    setS1_q5_ownership_founder_board_roles_documented(null)
+    setS1_q6_separation_business_personal_related_projects(null)
+    setS1_q7_multiple_brands_entities_projects(null)
+    setS1_q8_fiscal_sponsor_or_partner_structure(null)
+    setS1_q9_foundational_tax_finance_identifiers(null)
+    setS1_q10_foundation_ready_for_next_move(null)
     setS6Step(0)
     setS6_q1_informal_commitments_documented(null)
     setS6_q2_avoids_written_agreements(null)
@@ -1298,6 +1373,97 @@ function App() {
     setS6_q9_supplier_vendor_platform_terms(null)
     setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments(null)
     setCurrentGate(1)
+  }
+
+  function getS1QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s1_q1_current_stage,
+          setValue: setS1_q1_current_stage,
+        }
+      case 'q2':
+        return {
+          value: s1_q2_current_structure,
+          setValue: setS1_q2_current_structure,
+        }
+      case 'q3':
+        return {
+          value: s1_q3_foundational_formation_current_status_records,
+          setValue: setS1_q3_foundational_formation_current_status_records,
+        }
+      case 'q4':
+        return {
+          value: s1_q4_entity_or_person_receives_money_signs_owns,
+          setValue: setS1_q4_entity_or_person_receives_money_signs_owns,
+        }
+      case 'q5':
+        return {
+          value: s1_q5_ownership_founder_board_roles_documented,
+          setValue: setS1_q5_ownership_founder_board_roles_documented,
+        }
+      case 'q6':
+        return {
+          value: s1_q6_separation_business_personal_related_projects,
+          setValue: setS1_q6_separation_business_personal_related_projects,
+        }
+      case 'q7':
+        return {
+          value: s1_q7_multiple_brands_entities_projects,
+          setValue: setS1_q7_multiple_brands_entities_projects,
+        }
+      case 'q8':
+        return {
+          value: s1_q8_fiscal_sponsor_or_partner_structure,
+          setValue: setS1_q8_fiscal_sponsor_or_partner_structure,
+        }
+      case 'q9':
+        return {
+          value: s1_q9_foundational_tax_finance_identifiers,
+          setValue: setS1_q9_foundational_tax_finance_identifiers,
+        }
+      case 'q10':
+        return {
+          value: s1_q10_foundation_ready_for_next_move,
+          setValue: setS1_q10_foundation_ready_for_next_move,
+        }
+      default:
+        return null
+    }
+  }
+
+  function handleS1Answer(questionId, optionValue) {
+    const binding = getS1QuestionBinding(questionId)
+    const question = getS1QuestionById(questionId)
+    if (!binding || !question) {
+      return
+    }
+
+    binding.setValue(optionValue)
+
+    const nextDiagnosticContext = buildDiagnosticContext({
+      business_models,
+      team_structure,
+      structure_orientation,
+      next_moves,
+      recent_events_12mo,
+      s1_q1_current_stage,
+      s1_q2_current_structure,
+      diagnosticStoppedAtBoundary: false,
+      [question.field]: optionValue,
+    })
+    const nextVisibleIds = getVisibleS1QuestionIds(nextDiagnosticContext)
+
+    if (s1Step < nextVisibleIds.length - 1) {
+      setS1Step((prev) => prev + 1)
+      return
+    }
+    if (s6Triggered) {
+      setS6Step(0)
+      setCurrentGate('s6')
+      return
+    }
+    setCurrentGate('s1-complete')
   }
 
   function getS6QuestionBinding(questionId) {
@@ -1532,13 +1698,34 @@ function App() {
   if (currentGate === 'complete') {
     return (
       <CompletionScreen
-        showS6Continue={s6Triggered}
-        onContinueToS6={() => {
-          setS6Step(0)
-          setCurrentGate('s6')
+        onContinueToS1={() => {
+          setS1Step(0)
+          setCurrentGate('s1')
         }}
       />
     )
+  }
+
+  if (currentGate === 's1') {
+    const currentQuestionId = visibleS1QuestionIds[s1Step]
+    const question = getS1QuestionById(currentQuestionId)
+    const binding = getS1QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S1QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS1Answer(currentQuestionId, optionValue)}
+      />
+    )
+  }
+
+  if (currentGate === 's1-complete') {
+    return <S1SectionCompleteScreen />
   }
 
   if (currentGate === 's6') {

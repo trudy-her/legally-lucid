@@ -12,6 +12,20 @@
   box-sizing: border-box;
 }
 
+.gate__section-header {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .gate__section-header {
+    color: var(--text);
+  }
+}
+
 .gate__question {
   font-family: var(--heading);
   font-weight: 500;
