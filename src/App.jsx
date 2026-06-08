@@ -29,6 +29,7 @@ import { getS3QuestionById, getVisibleS3QuestionIds } from './section3Data.js'
 import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
 import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
 import { S3QuestionScreen, S3SectionCompleteScreen } from './S3Section.jsx'
+import { SectionIntro } from './SectionIntro.jsx'
 import {
   ContinueError,
   MultiSelectHint,
@@ -1049,7 +1050,7 @@ function FinancialBoundaryScreen({ onContinue, onStop, onBack }) {
 }
 
 function App() {
-  const [currentGate, setCurrentGate] = useState(1)
+  const [currentGate, setCurrentGate] = useState('s0-intro')
   const [stage_v35, setStage_v35] = useState(null)
   const [business_models, setBusiness_models] = useState([])
   const [primary_model, setPrimary_model] = useState(null)
@@ -1526,7 +1527,7 @@ function App() {
       return
     }
     setS2Step(0)
-    setCurrentGate('s2')
+    setCurrentGate('s2-intro')
   }
 
   function goBackFromS1() {
@@ -1534,7 +1535,7 @@ function App() {
       setS1Step((prev) => prev - 1)
       return
     }
-    setCurrentGate('complete')
+    setCurrentGate('s1-intro')
   }
 
   function goBackFromS2() {
@@ -1542,8 +1543,7 @@ function App() {
       setS2Step((prev) => prev - 1)
       return
     }
-    setS1Step(Math.max(0, visibleS1QuestionIds.length - 1))
-    setCurrentGate('s1')
+    setCurrentGate('s2-intro')
   }
 
   function goBackFromS3() {
@@ -1551,8 +1551,7 @@ function App() {
       setS3Step((prev) => prev - 1)
       return
     }
-    setS2Step(Math.max(0, visibleS2QuestionIds.length - 1))
-    setCurrentGate('s2')
+    setCurrentGate('s3-intro')
   }
 
   function goBackFromS6() {
@@ -1560,8 +1559,7 @@ function App() {
       setS6Step((prev) => prev - 1)
       return
     }
-    setS3Step(Math.max(0, visibleS3QuestionIds.length - 1))
-    setCurrentGate('s3')
+    setCurrentGate('s6-intro')
   }
 
   function goBackFromGate() {
@@ -1742,7 +1740,7 @@ function App() {
       return
     }
     setS3Step(0)
-    setCurrentGate('s3')
+    setCurrentGate('s3-intro')
   }
 
   function getS3QuestionBinding(questionId) {
@@ -1838,7 +1836,7 @@ function App() {
     }
     if (s6Triggered) {
       setS6Step(0)
-      setCurrentGate('s6')
+      setCurrentGate('s6-intro')
       return
     }
     setCurrentGate('s3-complete')
@@ -2059,6 +2057,15 @@ function App() {
     setCurrentGate('2b')
   }
 
+  if (currentGate === 's0-intro') {
+    return (
+      <SectionIntro
+        sectionId="S0"
+        onBegin={() => setCurrentGate(1)}
+      />
+    )
+  }
+
   if (currentGate === 1) {
     return (
       <Gate1Screen
@@ -2218,7 +2225,55 @@ function App() {
       <CompletionScreen
         onContinueToS1={() => {
           setS1Step(0)
+          setCurrentGate('s1-intro')
+        }}
+      />
+    )
+  }
+
+  if (currentGate === 's1-intro') {
+    return (
+      <SectionIntro
+        sectionId="S1"
+        onBegin={() => {
+          setS1Step(0)
           setCurrentGate('s1')
+        }}
+      />
+    )
+  }
+
+  if (currentGate === 's2-intro') {
+    return (
+      <SectionIntro
+        sectionId="S2"
+        onBegin={() => {
+          setS2Step(0)
+          setCurrentGate('s2')
+        }}
+      />
+    )
+  }
+
+  if (currentGate === 's3-intro') {
+    return (
+      <SectionIntro
+        sectionId="S3"
+        onBegin={() => {
+          setS3Step(0)
+          setCurrentGate('s3')
+        }}
+      />
+    )
+  }
+
+  if (currentGate === 's6-intro') {
+    return (
+      <SectionIntro
+        sectionId="S6"
+        onBegin={() => {
+          setS6Step(0)
+          setCurrentGate('s6')
         }}
       />
     )
