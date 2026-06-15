@@ -21,6 +21,7 @@ import {
   computeSignedWithoutReview,
   getS6QuestionById,
   getVisibleS6QuestionIds,
+  resolveS6QuestionAnswer,
 } from './section6Data.js'
 import { buildDiagnosticContext } from './diagnosticTags.js'
 import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
@@ -776,6 +777,18 @@ function S6QuestionScreen({ question, mode, value, setValue, onContinue, onBack 
         return [...withoutNotSure, optionValue]
       }
 
+      if (question.id === 'q15') {
+        if (optionValue === 'no_known_issues') {
+          return prev.includes('no_known_issues') ? [] : ['no_known_issues']
+        }
+
+        const withoutNoKnownIssues = prev.filter((v) => v !== 'no_known_issues')
+        if (withoutNoKnownIssues.includes(optionValue)) {
+          return withoutNoKnownIssues.filter((v) => v !== optionValue)
+        }
+        return [...withoutNoKnownIssues, optionValue]
+      }
+
       if (prev.includes(optionValue)) {
         return prev.filter((v) => v !== optionValue)
       }
@@ -1218,6 +1231,21 @@ function App() {
     s6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
     setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
   ] = useState(null)
+  const [s6_q11_signature_authority_approval, setS6_q11_signature_authority_approval] =
+    useState(null)
+  const [
+    s6_q12_renewal_notice_deadline_tracking,
+    setS6_q12_renewal_notice_deadline_tracking,
+  ] = useState(null)
+  const [s6_q13_final_versions_storage, setS6_q13_final_versions_storage] =
+    useState(null)
+  const [
+    s6_q14_changes_side_promises_documented,
+    setS6_q14_changes_side_promises_documented,
+  ] = useState(null)
+  const [s6_q15_agreement_related_issues, setS6_q15_agreement_related_issues] =
+    useState([])
+  const [s6AnswerEscalation, setS6AnswerEscalation] = useState({})
 
   const gateContext = useMemo(
     () => ({
@@ -1267,6 +1295,22 @@ function App() {
       s2_q15_using_licensed_or_partner_assets,
       s3_q1_offer_type,
       s3_q6_paid_free_beta_pilot_trial_status,
+      s6_q1_informal_commitments_documented,
+      s6_q2_avoids_written_agreements,
+      s6_q3_agreement_source,
+      s6_q4_scope_responsibilities_deliverables,
+      s6_q5_ownership_use_sharing_work_product,
+      s6_q6_confidentiality_data_sensitive_info,
+      s6_q7_responsibility_if_something_goes_wrong,
+      s6_q8_payment_refunds_cancellation_termination,
+      s6_q9_supplier_vendor_platform_terms,
+      s6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
+      s6_q11_signature_authority_approval,
+      s6_q12_renewal_notice_deadline_tracking,
+      s6_q13_final_versions_storage,
+      s6_q14_changes_side_promises_documented,
+      s6_q15_agreement_related_issues,
+      s6AnswerEscalation,
       diagnosticStoppedAtBoundary: false,
       ...overrides,
     }
@@ -1300,6 +1344,22 @@ function App() {
       s2_q15_using_licensed_or_partner_assets,
       s3_q1_offer_type,
       s3_q6_paid_free_beta_pilot_trial_status,
+      s6_q1_informal_commitments_documented,
+      s6_q2_avoids_written_agreements,
+      s6_q3_agreement_source,
+      s6_q4_scope_responsibilities_deliverables,
+      s6_q5_ownership_use_sharing_work_product,
+      s6_q6_confidentiality_data_sensitive_info,
+      s6_q7_responsibility_if_something_goes_wrong,
+      s6_q8_payment_refunds_cancellation_termination,
+      s6_q9_supplier_vendor_platform_terms,
+      s6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
+      s6_q11_signature_authority_approval,
+      s6_q12_renewal_notice_deadline_tracking,
+      s6_q13_final_versions_storage,
+      s6_q14_changes_side_promises_documented,
+      s6_q15_agreement_related_issues,
+      s6AnswerEscalation,
     ],
   )
 
@@ -1442,6 +1502,12 @@ function App() {
     setS6_q8_payment_refunds_cancellation_termination(null)
     setS6_q9_supplier_vendor_platform_terms(null)
     setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments(null)
+    setS6_q11_signature_authority_approval(null)
+    setS6_q12_renewal_notice_deadline_tracking(null)
+    setS6_q13_final_versions_storage(null)
+    setS6_q14_changes_side_promises_documented(null)
+    setS6_q15_agreement_related_issues([])
+    setS6AnswerEscalation({})
     setCurrentGate(1)
   }
 
@@ -2031,9 +2097,75 @@ function App() {
           setValue: setS6_q10_grants_sponsorships_fiscal_sponsors_donor_commitments,
           mode: 'single',
         }
+      case 'q11':
+        return {
+          value: s6_q11_signature_authority_approval,
+          setValue: setS6_q11_signature_authority_approval,
+          mode: 'single',
+        }
+      case 'q12':
+        return {
+          value: s6_q12_renewal_notice_deadline_tracking,
+          setValue: setS6_q12_renewal_notice_deadline_tracking,
+          mode: 'single',
+        }
+      case 'q13':
+        return {
+          value: s6_q13_final_versions_storage,
+          setValue: setS6_q13_final_versions_storage,
+          mode: 'single',
+        }
+      case 'q14':
+        return {
+          value: s6_q14_changes_side_promises_documented,
+          setValue: setS6_q14_changes_side_promises_documented,
+          mode: 'single',
+        }
+      case 'q15':
+        return {
+          value: s6_q15_agreement_related_issues,
+          setValue: setS6_q15_agreement_related_issues,
+          mode: 'multi',
+        }
       default:
         return null
     }
+  }
+
+  function handleS6Continue() {
+    const currentQuestionId = visibleS6QuestionIds[s6Step]
+    const question = getS6QuestionById(currentQuestionId)
+    const binding = getS6QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return
+    }
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
+      return
+    }
+
+    if (['q11', 'q12', 'q13', 'q14', 'q15'].includes(currentQuestionId)) {
+      const escalation = resolveS6QuestionAnswer(
+        currentQuestionId,
+        binding.value,
+        diagnosticContext.tags,
+        S6_BEHAVIOR_AVOIDANCE_FLAG,
+      )
+
+      if (escalation) {
+        setS6AnswerEscalation((prev) => ({
+          ...prev,
+          [question.field]: escalation,
+        }))
+      }
+    }
+
+    advanceS6()
   }
 
   function advanceS6() {
@@ -2368,7 +2500,7 @@ function App() {
         mode={binding.mode}
         value={binding.value}
         setValue={binding.setValue}
-        onContinue={advanceS6}
+        onContinue={handleS6Continue}
         onBack={goBackFromS6}
       />
     )

@@ -48,6 +48,8 @@ const EVENT_TAG_MAP = {
   warning_legal_platform: 'EVENT_WARNING_LEGAL_PLATFORM',
   data_security_concern: 'EVENT_DATA_SECURITY_CONCERN',
   key_person_change: 'EVENT_KEY_PERSON_CHANGE',
+  signed_without_review: 'EVENT_SIGNED_WITHOUT_REVIEW',
+  customer_payment_service_issue: 'EVENT_CUSTOMER_PAYMENT_SERVICE_ISSUE',
 }
 
 function addMappedTags(tags, values, map) {
