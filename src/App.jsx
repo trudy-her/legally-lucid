@@ -23,6 +23,13 @@ import {
   getVisibleS6QuestionIds,
   resolveS6QuestionAnswer,
 } from './section6Data.js'
+import {
+  computeS27StrongCapitalSignal,
+  getS27QuestionById,
+  getVisibleS27QuestionIds,
+  isS27Triggered,
+  resolveS27QuestionAnswer,
+} from './section27Data.js'
 import { buildDiagnosticContext } from './diagnosticTags.js'
 import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
 import { getS2QuestionById, getVisibleS2QuestionIds } from './section2Data.js'
@@ -30,6 +37,7 @@ import { getS3QuestionById, getVisibleS3QuestionIds } from './section3Data.js'
 import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
 import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
 import { S3QuestionScreen, S3SectionCompleteScreen } from './S3Section.jsx'
+import { S27QuestionScreen, S27SectionCompleteScreen } from './S27Section.jsx'
 import { SectionIntro } from './SectionIntro.jsx'
 import {
   ContinueError,
@@ -1246,6 +1254,41 @@ function App() {
   const [s6_q15_agreement_related_issues, setS6_q15_agreement_related_issues] =
     useState([])
   const [s6AnswerEscalation, setS6AnswerEscalation] = useState({})
+  const [s27Step, setS27Step] = useState(0)
+  const [s27_q1_capital_funding_plans, setS27_q1_capital_funding_plans] =
+    useState(null)
+  const [s27_q2_funding_type, setS27_q2_funding_type] = useState([])
+  const [s27_q3_value_already_exchanged, setS27_q3_value_already_exchanged] =
+    useState(null)
+  const [s27_q4_promises_documented, setS27_q4_promises_documented] =
+    useState(null)
+  const [
+    s27_q5_ownership_records_match_funding_statements,
+    setS27_q5_ownership_records_match_funding_statements,
+  ] = useState(null)
+  const [
+    s27_q6_expectations_documented_for_funding,
+    setS27_q6_expectations_documented_for_funding,
+  ] = useState(null)
+  const [
+    s27_q7_entity_structure_funding_alignment,
+    setS27_q7_entity_structure_funding_alignment,
+  ] = useState(null)
+  const [
+    s27_q8_funding_documents_signed_or_reviewed,
+    setS27_q8_funding_documents_signed_or_reviewed,
+  ] = useState(null)
+  const [
+    s27_q9_program_participation_obligations,
+    setS27_q9_program_participation_obligations,
+  ] = useState(null)
+  const [s27_q10_fundraising_materials_accuracy, setS27_q10_fundraising_materials_accuracy] =
+    useState(null)
+  const [s27_q11_diligence_records_available, setS27_q11_diligence_records_available] =
+    useState(null)
+  const [s27_q12_capital_diligence_issues, setS27_q12_capital_diligence_issues] =
+    useState([])
+  const [s27AnswerEscalation, setS27AnswerEscalation] = useState({})
 
   const gateContext = useMemo(
     () => ({
@@ -1269,11 +1312,12 @@ function App() {
   )
 
   function buildDiagnosticState(overrides = {}) {
-    return {
+    const baseState = {
       business_models,
       team_structure,
       structure_orientation,
       next_moves,
+      growth_path,
       recent_events_12mo,
       ai_use,
       s1_q1_current_stage,
@@ -1311,18 +1355,39 @@ function App() {
       s6_q14_changes_side_promises_documented,
       s6_q15_agreement_related_issues,
       s6AnswerEscalation,
+      s27_q1_capital_funding_plans,
+      s27_q2_funding_type,
+      s27_q3_value_already_exchanged,
+      s27_q4_promises_documented,
+      s27_q5_ownership_records_match_funding_statements,
+      s27_q6_expectations_documented_for_funding,
+      s27_q7_entity_structure_funding_alignment,
+      s27_q8_funding_documents_signed_or_reviewed,
+      s27_q9_program_participation_obligations,
+      s27_q10_fundraising_materials_accuracy,
+      s27_q11_diligence_records_available,
+      s27_q12_capital_diligence_issues,
+      s27AnswerEscalation,
       diagnosticStoppedAtBoundary: false,
       ...overrides,
     }
+
+    const tags = buildDiagnosticContext(baseState).tags
+
+    return {
+      ...baseState,
+      s27_strong_capital_signal: computeS27StrongCapitalSignal(baseState, tags),
+    }
   }
 
-  const diagnosticContext = useMemo(
-    () => buildDiagnosticContext(buildDiagnosticState()),
+  const diagnosticState = useMemo(
+    () => buildDiagnosticState(),
     [
       business_models,
       team_structure,
       structure_orientation,
       next_moves,
+      growth_path,
       recent_events_12mo,
       ai_use,
       s1_q1_current_stage,
@@ -1360,7 +1425,25 @@ function App() {
       s6_q14_changes_side_promises_documented,
       s6_q15_agreement_related_issues,
       s6AnswerEscalation,
+      s27_q1_capital_funding_plans,
+      s27_q2_funding_type,
+      s27_q3_value_already_exchanged,
+      s27_q4_promises_documented,
+      s27_q5_ownership_records_match_funding_statements,
+      s27_q6_expectations_documented_for_funding,
+      s27_q7_entity_structure_funding_alignment,
+      s27_q8_funding_documents_signed_or_reviewed,
+      s27_q9_program_participation_obligations,
+      s27_q10_fundraising_materials_accuracy,
+      s27_q11_diligence_records_available,
+      s27_q12_capital_diligence_issues,
+      s27AnswerEscalation,
     ],
+  )
+
+  const diagnosticContext = useMemo(
+    () => buildDiagnosticContext(diagnosticState),
+    [diagnosticState],
   )
 
   const visibleS1QuestionIds = useMemo(
@@ -1381,6 +1464,16 @@ function App() {
   const visibleS6QuestionIds = useMemo(
     () => getVisibleS6QuestionIds(gateContext),
     [gateContext],
+  )
+
+  const s27Triggered = useMemo(
+    () => isS27Triggered(diagnosticState, diagnosticContext.tags),
+    [diagnosticState, diagnosticContext.tags],
+  )
+
+  const visibleS27QuestionIds = useMemo(
+    () => getVisibleS27QuestionIds(diagnosticState),
+    [diagnosticState],
   )
 
   const signedWithoutReview = useMemo(
@@ -1508,6 +1601,20 @@ function App() {
     setS6_q14_changes_side_promises_documented(null)
     setS6_q15_agreement_related_issues([])
     setS6AnswerEscalation({})
+    setS27Step(0)
+    setS27_q1_capital_funding_plans(null)
+    setS27_q2_funding_type([])
+    setS27_q3_value_already_exchanged(null)
+    setS27_q4_promises_documented(null)
+    setS27_q5_ownership_records_match_funding_statements(null)
+    setS27_q6_expectations_documented_for_funding(null)
+    setS27_q7_entity_structure_funding_alignment(null)
+    setS27_q8_funding_documents_signed_or_reviewed(null)
+    setS27_q9_program_participation_obligations(null)
+    setS27_q10_fundraising_materials_accuracy(null)
+    setS27_q11_diligence_records_available(null)
+    setS27_q12_capital_diligence_issues([])
+    setS27AnswerEscalation({})
     setCurrentGate(1)
   }
 
@@ -1626,6 +1733,19 @@ function App() {
       return
     }
     setCurrentGate('s6-intro')
+  }
+
+  function goBackFromS27() {
+    if (s27Step > 0) {
+      setS27Step((prev) => prev - 1)
+      return
+    }
+    setCurrentGate('s27-intro')
+  }
+
+  function advanceToS27Intro() {
+    setS27Step(0)
+    setCurrentGate('s27-intro')
   }
 
   function goBackFromGate() {
@@ -1905,6 +2025,10 @@ function App() {
       setCurrentGate('s6-intro')
       return
     }
+    if (s27Triggered) {
+      advanceToS27Intro()
+      return
+    }
     setCurrentGate('s3-complete')
   }
 
@@ -2173,7 +2297,172 @@ function App() {
       setS6Step((prev) => prev + 1)
       return
     }
+    if (s27Triggered) {
+      advanceToS27Intro()
+      return
+    }
     setCurrentGate('s6-complete')
+  }
+
+  function getS27QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s27_q1_capital_funding_plans,
+          setValue: setS27_q1_capital_funding_plans,
+          mode: 'single',
+        }
+      case 'q2':
+        return {
+          value: s27_q2_funding_type,
+          setValue: setS27_q2_funding_type,
+          mode: 'multi',
+        }
+      case 'q3':
+        return {
+          value: s27_q3_value_already_exchanged,
+          setValue: setS27_q3_value_already_exchanged,
+          mode: 'single',
+        }
+      case 'q4':
+        return {
+          value: s27_q4_promises_documented,
+          setValue: setS27_q4_promises_documented,
+          mode: 'single',
+        }
+      case 'q5':
+        return {
+          value: s27_q5_ownership_records_match_funding_statements,
+          setValue: setS27_q5_ownership_records_match_funding_statements,
+          mode: 'single',
+        }
+      case 'q6':
+        return {
+          value: s27_q6_expectations_documented_for_funding,
+          setValue: setS27_q6_expectations_documented_for_funding,
+          mode: 'single',
+        }
+      case 'q7':
+        return {
+          value: s27_q7_entity_structure_funding_alignment,
+          setValue: setS27_q7_entity_structure_funding_alignment,
+          mode: 'single',
+        }
+      case 'q8':
+        return {
+          value: s27_q8_funding_documents_signed_or_reviewed,
+          setValue: setS27_q8_funding_documents_signed_or_reviewed,
+          mode: 'single',
+        }
+      case 'q9':
+        return {
+          value: s27_q9_program_participation_obligations,
+          setValue: setS27_q9_program_participation_obligations,
+          mode: 'single',
+        }
+      case 'q10':
+        return {
+          value: s27_q10_fundraising_materials_accuracy,
+          setValue: setS27_q10_fundraising_materials_accuracy,
+          mode: 'single',
+        }
+      case 'q11':
+        return {
+          value: s27_q11_diligence_records_available,
+          setValue: setS27_q11_diligence_records_available,
+          mode: 'single',
+        }
+      case 'q12':
+        return {
+          value: s27_q12_capital_diligence_issues,
+          setValue: setS27_q12_capital_diligence_issues,
+          mode: 'multi',
+        }
+      default:
+        return null
+    }
+  }
+
+  function handleS27Select(questionId, optionValue) {
+    const binding = getS27QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'single') {
+      return
+    }
+    binding.setValue(optionValue)
+  }
+
+  function handleS27Toggle(questionId, optionValue) {
+    const binding = getS27QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'multi') {
+      return
+    }
+
+    binding.setValue((prev) => {
+      if (questionId === 'q12') {
+        if (optionValue === 'no_known_issues') {
+          return prev.includes('no_known_issues') ? [] : ['no_known_issues']
+        }
+
+        const withoutNoKnownIssues = prev.filter((v) => v !== 'no_known_issues')
+        if (withoutNoKnownIssues.includes(optionValue)) {
+          return withoutNoKnownIssues.filter((v) => v !== optionValue)
+        }
+        return [...withoutNoKnownIssues, optionValue]
+      }
+
+      if (prev.includes(optionValue)) {
+        return prev.filter((v) => v !== optionValue)
+      }
+      return [...prev, optionValue]
+    })
+  }
+
+  function handleS27Continue() {
+    const currentQuestionId = visibleS27QuestionIds[s27Step]
+    const question = getS27QuestionById(currentQuestionId)
+    const binding = getS27QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return
+    }
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
+      return
+    }
+
+    const nextState = buildDiagnosticState({ [question.field]: binding.value })
+    const nextTags = buildDiagnosticContext(nextState).tags
+    const escalation = resolveS27QuestionAnswer(currentQuestionId, nextState, nextTags)
+
+    if (escalation) {
+      setS27AnswerEscalation((prev) => ({
+        ...prev,
+        [question.field]: escalation,
+      }))
+    }
+
+    if (currentQuestionId === 'q12') {
+      const q9Question = getS27QuestionById('q9')
+      const q9Escalation = resolveS27QuestionAnswer('q9', nextState, nextTags)
+      if (q9Question && q9Escalation) {
+        setS27AnswerEscalation((prev) => ({
+          ...prev,
+          [q9Question.field]: q9Escalation,
+        }))
+      }
+    }
+
+    const nextVisibleIds = getVisibleS27QuestionIds(nextState)
+    if (s27Step < nextVisibleIds.length - 1) {
+      setS27Step((prev) => prev + 1)
+      return
+    }
+
+    setCurrentGate('s27-complete')
   }
 
   function advanceToGate3() {
@@ -2411,6 +2700,18 @@ function App() {
     )
   }
 
+  if (currentGate === 's27-intro') {
+    return (
+      <SectionIntro
+        sectionId="S27"
+        onBegin={() => {
+          setS27Step(0)
+          setCurrentGate('s27')
+        }}
+      />
+    )
+  }
+
   if (currentGate === 's1') {
     const currentQuestionId = visibleS1QuestionIds[s1Step]
     const question = getS1QuestionById(currentQuestionId)
@@ -2508,6 +2809,31 @@ function App() {
 
   if (currentGate === 's6-complete') {
     return <S6SectionCompleteScreen />
+  }
+
+  if (currentGate === 's27') {
+    const currentQuestionId = visibleS27QuestionIds[s27Step]
+    const question = getS27QuestionById(currentQuestionId)
+    const binding = getS27QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S27QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS27Select(currentQuestionId, optionValue)}
+        onToggle={(optionValue) => handleS27Toggle(currentQuestionId, optionValue)}
+        onContinue={handleS27Continue}
+        onBack={goBackFromS27}
+      />
+    )
+  }
+
+  if (currentGate === 's27-complete') {
+    return <S27SectionCompleteScreen />
   }
 
   return null

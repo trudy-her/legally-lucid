@@ -302,6 +302,11 @@ export const gate6 = {
       label: 'Seeking donations, grants, or sponsors',
     },
     {
+      value: 'demo_day_pitch_prize_program',
+      label:
+        'Demo Day, pitch competition, prize program, accelerator, or incubator',
+    },
+    {
       value: 'enterprise_customers',
       label: 'Pursuing enterprise or institutional customers',
     },
@@ -463,6 +468,11 @@ export const gate10 = {
     {
       value: 'donor_grant_sponsor_issue',
       label: 'Had a donor, grant, or sponsor issue',
+    },
+    {
+      value: 'accelerator_prize_safe_program_funding',
+      label:
+        'Participated in an accelerator, prize program, SAFE, or program funding',
     },
     {
       value: 'none',

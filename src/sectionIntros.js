@@ -36,6 +36,13 @@ Answer based on how your offer works today and what you are planning next. The p
 
 You may not have formal contracts for everything yet. Answer honestly so your Map can flag where the business may need clearer scope, payment, ownership, confidentiality, responsibility, termination, or review.`,
   },
+  {
+    sectionId: 'S27',
+    name: 'Capital Raising, Investor Documentation, and Ownership Expectations',
+    intro: `This section looks at capital raising, investor documentation, ownership expectations, and funding-related readiness at a high level.
+
+Answer based on what is true today and what you are planning next. You do not need to enter names, amounts, percentages, or confidential deal details.`,
+  },
 ]
 
 export function getSectionIntro(sectionId) {

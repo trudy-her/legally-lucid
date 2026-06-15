@@ -6,6 +6,7 @@ const NEXT_MOVE_TAG_MAP = {
   raising_investment_business_funding: 'MOVE_RAISING_INVESTMENT_BUSINESS_FUNDING',
   signing_agreement: 'MOVE_SIGNING_AGREEMENT',
   seeking_donations_grants_sponsors: 'MOVE_SEEKING_DONATIONS_GRANTS_SPONSORS',
+  demo_day_pitch_prize_program: 'MOVE_DEMO_DAY_PITCH_PRIZE_PROGRAM',
   enterprise_customers: 'MOVE_ENTERPRISE_CUSTOMERS',
   platform_channel_sales: 'MOVE_PLATFORM_CHANNEL_SALES',
 }
@@ -50,6 +51,8 @@ const EVENT_TAG_MAP = {
   key_person_change: 'EVENT_KEY_PERSON_CHANGE',
   signed_without_review: 'EVENT_SIGNED_WITHOUT_REVIEW',
   customer_payment_service_issue: 'EVENT_CUSTOMER_PAYMENT_SERVICE_ISSUE',
+  accelerator_prize_safe_program_funding:
+    'EVENT_ACCELERATOR_PRIZE_SAFE_PROGRAM_FUNDING',
 }
 
 function addMappedTags(tags, values, map) {
