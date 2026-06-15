@@ -43,6 +43,13 @@ You may not have formal contracts for everything yet. Answer honestly so your Ma
 
 Answer based on what is true today and what you are planning next. You do not need to enter names, amounts, percentages, or confidential deal details.`,
   },
+  {
+    sectionId: 'S13',
+    name: 'Privacy, Data Collection, and Data Use',
+    intro: `This section looks at what information your business collects, how it is used, stored, shared, and described to people.
+
+Answer at a high level based on what is true today. Do not enter customer data, donor data, employee data, health information, names, exact counts, or confidential narratives.`,
+  },
 ]
 
 export function getSectionIntro(sectionId) {

@@ -30,6 +30,14 @@ import {
   isS27Triggered,
   resolveS27QuestionAnswer,
 } from './section27Data.js'
+import {
+  computeS13DerivedFields,
+  getS13QuestionById,
+  getVisibleS13QuestionIds,
+  isS13Triggered,
+  resolveS13QuestionAnswer,
+  shouldS13EarlyExit,
+} from './section13Data.js'
 import { buildDiagnosticContext } from './diagnosticTags.js'
 import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
 import { getS2QuestionById, getVisibleS2QuestionIds } from './section2Data.js'
@@ -38,6 +46,7 @@ import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
 import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
 import { S3QuestionScreen, S3SectionCompleteScreen } from './S3Section.jsx'
 import { S27QuestionScreen, S27SectionCompleteScreen } from './S27Section.jsx'
+import { S13QuestionScreen, S13SectionCompleteScreen } from './S13Section.jsx'
 import { SectionIntro } from './SectionIntro.jsx'
 import {
   ContinueError,
@@ -1289,6 +1298,63 @@ function App() {
   const [s27_q12_capital_diligence_issues, setS27_q12_capital_diligence_issues] =
     useState([])
   const [s27AnswerEscalation, setS27AnswerEscalation] = useState({})
+  const [s13Step, setS13Step] = useState(0)
+  const [s13_q1_data_collection_status, setS13_q1_data_collection_status] =
+    useState(null)
+  const [s13_q2_data_types_collected, setS13_q2_data_types_collected] = useState([])
+  const [s13_q3_data_subject_groups, setS13_q3_data_subject_groups] = useState([])
+  const [s13_q4_collection_channels, setS13_q4_collection_channels] = useState([])
+  const [s13_q5_storage_and_access_awareness, setS13_q5_storage_and_access_awareness] =
+    useState(null)
+  const [
+    s13_q6_data_access_by_tools_vendors_team,
+    setS13_q6_data_access_by_tools_vendors_team,
+  ] = useState(null)
+  const [s13_q7_public_privacy_language_exists, setS13_q7_public_privacy_language_exists] =
+    useState(null)
+  const [
+    s13_q8_privacy_language_matches_practice,
+    setS13_q8_privacy_language_matches_practice,
+  ] = useState(null)
+  const [
+    s13_q9_terms_platform_data_user_content_alignment,
+    setS13_q9_terms_platform_data_user_content_alignment,
+  ] = useState(null)
+  const [s13_q10_data_use_transparency, setS13_q10_data_use_transparency] =
+    useState(null)
+  const [s13_q11_tracking_technologies, setS13_q11_tracking_technologies] =
+    useState(null)
+  const [s13_q12_secondary_data_uses, setS13_q12_secondary_data_uses] = useState(null)
+  const [
+    s13_q13_data_sharing_transfer_third_parties,
+    setS13_q13_data_sharing_transfer_third_parties,
+  ] = useState(null)
+  const [s13_q14_sensitive_information_collected, setS13_q14_sensitive_information_collected] =
+    useState(null)
+  const [
+    s13_q15_health_wellness_body_related_information,
+    setS13_q15_health_wellness_body_related_information,
+  ] = useState(null)
+  const [
+    s13_q16_dataset_ai_product_training_data,
+    setS13_q16_dataset_ai_product_training_data,
+  ] = useState(null)
+  const [
+    s13_q17_vendor_tool_data_handling_awareness,
+    setS13_q17_vendor_tool_data_handling_awareness,
+  ] = useState(null)
+  const [
+    s13_q18_cross_border_multistate_data_presence,
+    setS13_q18_cross_border_multistate_data_presence,
+  ] = useState(null)
+  const [s13_q19_data_request_process, setS13_q19_data_request_process] =
+    useState(null)
+  const [s13_q20_internal_data_rules, setS13_q20_internal_data_rules] = useState(null)
+  const [s13_q21_privacy_data_active_issues, setS13_q21_privacy_data_active_issues] =
+    useState([])
+  const [s13_inherited_ai_data_use_signal, setS13_inherited_ai_data_use_signal] =
+    useState(false)
+  const [s13AnswerEscalation, setS13AnswerEscalation] = useState({})
 
   const gateContext = useMemo(
     () => ({
@@ -1338,6 +1404,7 @@ function App() {
       s2_q14_licensing_others_to_use_assets,
       s2_q15_using_licensed_or_partner_assets,
       s3_q1_offer_type,
+      s3_q2_primary_audience_or_recipient,
       s3_q6_paid_free_beta_pilot_trial_status,
       s6_q1_informal_commitments_documented,
       s6_q2_avoids_written_agreements,
@@ -1368,14 +1435,39 @@ function App() {
       s27_q11_diligence_records_available,
       s27_q12_capital_diligence_issues,
       s27AnswerEscalation,
+      s13_q1_data_collection_status,
+      s13_q2_data_types_collected,
+      s13_q3_data_subject_groups,
+      s13_q4_collection_channels,
+      s13_q5_storage_and_access_awareness,
+      s13_q6_data_access_by_tools_vendors_team,
+      s13_q7_public_privacy_language_exists,
+      s13_q8_privacy_language_matches_practice,
+      s13_q9_terms_platform_data_user_content_alignment,
+      s13_q10_data_use_transparency,
+      s13_q11_tracking_technologies,
+      s13_q12_secondary_data_uses,
+      s13_q13_data_sharing_transfer_third_parties,
+      s13_q14_sensitive_information_collected,
+      s13_q15_health_wellness_body_related_information,
+      s13_q16_dataset_ai_product_training_data,
+      s13_q17_vendor_tool_data_handling_awareness,
+      s13_q18_cross_border_multistate_data_presence,
+      s13_q19_data_request_process,
+      s13_q20_internal_data_rules,
+      s13_q21_privacy_data_active_issues,
+      s13_inherited_ai_data_use_signal,
+      s13AnswerEscalation,
       diagnosticStoppedAtBoundary: false,
       ...overrides,
     }
 
     const tags = buildDiagnosticContext(baseState).tags
+    const s13Derived = computeS13DerivedFields(baseState, tags)
 
     return {
       ...baseState,
+      ...s13Derived,
       s27_strong_capital_signal: computeS27StrongCapitalSignal(baseState, tags),
     }
   }
@@ -1408,6 +1500,7 @@ function App() {
       s2_q14_licensing_others_to_use_assets,
       s2_q15_using_licensed_or_partner_assets,
       s3_q1_offer_type,
+      s3_q2_primary_audience_or_recipient,
       s3_q6_paid_free_beta_pilot_trial_status,
       s6_q1_informal_commitments_documented,
       s6_q2_avoids_written_agreements,
@@ -1438,6 +1531,29 @@ function App() {
       s27_q11_diligence_records_available,
       s27_q12_capital_diligence_issues,
       s27AnswerEscalation,
+      s13_q1_data_collection_status,
+      s13_q2_data_types_collected,
+      s13_q3_data_subject_groups,
+      s13_q4_collection_channels,
+      s13_q5_storage_and_access_awareness,
+      s13_q6_data_access_by_tools_vendors_team,
+      s13_q7_public_privacy_language_exists,
+      s13_q8_privacy_language_matches_practice,
+      s13_q9_terms_platform_data_user_content_alignment,
+      s13_q10_data_use_transparency,
+      s13_q11_tracking_technologies,
+      s13_q12_secondary_data_uses,
+      s13_q13_data_sharing_transfer_third_parties,
+      s13_q14_sensitive_information_collected,
+      s13_q15_health_wellness_body_related_information,
+      s13_q16_dataset_ai_product_training_data,
+      s13_q17_vendor_tool_data_handling_awareness,
+      s13_q18_cross_border_multistate_data_presence,
+      s13_q19_data_request_process,
+      s13_q20_internal_data_rules,
+      s13_q21_privacy_data_active_issues,
+      s13_inherited_ai_data_use_signal,
+      s13AnswerEscalation,
     ],
   )
 
@@ -1474,6 +1590,16 @@ function App() {
   const visibleS27QuestionIds = useMemo(
     () => getVisibleS27QuestionIds(diagnosticState),
     [diagnosticState],
+  )
+
+  const s13Triggered = useMemo(
+    () => isS13Triggered(diagnosticState, diagnosticContext.tags),
+    [diagnosticState, diagnosticContext.tags],
+  )
+
+  const visibleS13QuestionIds = useMemo(
+    () => getVisibleS13QuestionIds(diagnosticState, diagnosticContext.tags),
+    [diagnosticState, diagnosticContext.tags],
   )
 
   const signedWithoutReview = useMemo(
@@ -1615,6 +1741,30 @@ function App() {
     setS27_q11_diligence_records_available(null)
     setS27_q12_capital_diligence_issues([])
     setS27AnswerEscalation({})
+    setS13Step(0)
+    setS13_q1_data_collection_status(null)
+    setS13_q2_data_types_collected([])
+    setS13_q3_data_subject_groups([])
+    setS13_q4_collection_channels([])
+    setS13_q5_storage_and_access_awareness(null)
+    setS13_q6_data_access_by_tools_vendors_team(null)
+    setS13_q7_public_privacy_language_exists(null)
+    setS13_q8_privacy_language_matches_practice(null)
+    setS13_q9_terms_platform_data_user_content_alignment(null)
+    setS13_q10_data_use_transparency(null)
+    setS13_q11_tracking_technologies(null)
+    setS13_q12_secondary_data_uses(null)
+    setS13_q13_data_sharing_transfer_third_parties(null)
+    setS13_q14_sensitive_information_collected(null)
+    setS13_q15_health_wellness_body_related_information(null)
+    setS13_q16_dataset_ai_product_training_data(null)
+    setS13_q17_vendor_tool_data_handling_awareness(null)
+    setS13_q18_cross_border_multistate_data_presence(null)
+    setS13_q19_data_request_process(null)
+    setS13_q20_internal_data_rules(null)
+    setS13_q21_privacy_data_active_issues([])
+    setS13_inherited_ai_data_use_signal(false)
+    setS13AnswerEscalation({})
     setCurrentGate(1)
   }
 
@@ -1746,6 +1896,19 @@ function App() {
   function advanceToS27Intro() {
     setS27Step(0)
     setCurrentGate('s27-intro')
+  }
+
+  function advanceToS13Intro() {
+    setS13Step(0)
+    setCurrentGate('s13-intro')
+  }
+
+  function goBackFromS13() {
+    if (s13Step > 0) {
+      setS13Step((prev) => prev - 1)
+      return
+    }
+    setCurrentGate('s13-intro')
   }
 
   function goBackFromGate() {
@@ -2029,6 +2192,10 @@ function App() {
       advanceToS27Intro()
       return
     }
+    if (s13Triggered) {
+      advanceToS13Intro()
+      return
+    }
     setCurrentGate('s3-complete')
   }
 
@@ -2301,6 +2468,10 @@ function App() {
       advanceToS27Intro()
       return
     }
+    if (s13Triggered) {
+      advanceToS13Intro()
+      return
+    }
     setCurrentGate('s6-complete')
   }
 
@@ -2462,7 +2633,233 @@ function App() {
       return
     }
 
+    if (isS13Triggered(nextState, nextTags)) {
+      advanceToS13Intro()
+      return
+    }
+
     setCurrentGate('s27-complete')
+  }
+
+  function getS13QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s13_q1_data_collection_status,
+          setValue: setS13_q1_data_collection_status,
+          mode: 'single',
+        }
+      case 'q2':
+        return {
+          value: s13_q2_data_types_collected,
+          setValue: setS13_q2_data_types_collected,
+          mode: 'multi',
+        }
+      case 'q3':
+        return {
+          value: s13_q3_data_subject_groups,
+          setValue: setS13_q3_data_subject_groups,
+          mode: 'multi',
+        }
+      case 'q4':
+        return {
+          value: s13_q4_collection_channels,
+          setValue: setS13_q4_collection_channels,
+          mode: 'multi',
+        }
+      case 'q5':
+        return {
+          value: s13_q5_storage_and_access_awareness,
+          setValue: setS13_q5_storage_and_access_awareness,
+          mode: 'single',
+        }
+      case 'q6':
+        return {
+          value: s13_q6_data_access_by_tools_vendors_team,
+          setValue: setS13_q6_data_access_by_tools_vendors_team,
+          mode: 'single',
+        }
+      case 'q7':
+        return {
+          value: s13_q7_public_privacy_language_exists,
+          setValue: setS13_q7_public_privacy_language_exists,
+          mode: 'single',
+        }
+      case 'q8':
+        return {
+          value: s13_q8_privacy_language_matches_practice,
+          setValue: setS13_q8_privacy_language_matches_practice,
+          mode: 'single',
+        }
+      case 'q9':
+        return {
+          value: s13_q9_terms_platform_data_user_content_alignment,
+          setValue: setS13_q9_terms_platform_data_user_content_alignment,
+          mode: 'single',
+        }
+      case 'q10':
+        return {
+          value: s13_q10_data_use_transparency,
+          setValue: setS13_q10_data_use_transparency,
+          mode: 'single',
+        }
+      case 'q11':
+        return {
+          value: s13_q11_tracking_technologies,
+          setValue: setS13_q11_tracking_technologies,
+          mode: 'single',
+        }
+      case 'q12':
+        return {
+          value: s13_q12_secondary_data_uses,
+          setValue: setS13_q12_secondary_data_uses,
+          mode: 'single',
+        }
+      case 'q13':
+        return {
+          value: s13_q13_data_sharing_transfer_third_parties,
+          setValue: setS13_q13_data_sharing_transfer_third_parties,
+          mode: 'single',
+        }
+      case 'q14':
+        return {
+          value: s13_q14_sensitive_information_collected,
+          setValue: setS13_q14_sensitive_information_collected,
+          mode: 'single',
+        }
+      case 'q15':
+        return {
+          value: s13_q15_health_wellness_body_related_information,
+          setValue: setS13_q15_health_wellness_body_related_information,
+          mode: 'single',
+        }
+      case 'q16':
+        return {
+          value: s13_q16_dataset_ai_product_training_data,
+          setValue: setS13_q16_dataset_ai_product_training_data,
+          mode: 'single',
+        }
+      case 'q17':
+        return {
+          value: s13_q17_vendor_tool_data_handling_awareness,
+          setValue: setS13_q17_vendor_tool_data_handling_awareness,
+          mode: 'single',
+        }
+      case 'q18':
+        return {
+          value: s13_q18_cross_border_multistate_data_presence,
+          setValue: setS13_q18_cross_border_multistate_data_presence,
+          mode: 'single',
+        }
+      case 'q19':
+        return {
+          value: s13_q19_data_request_process,
+          setValue: setS13_q19_data_request_process,
+          mode: 'single',
+        }
+      case 'q20':
+        return {
+          value: s13_q20_internal_data_rules,
+          setValue: setS13_q20_internal_data_rules,
+          mode: 'single',
+        }
+      case 'q21':
+        return {
+          value: s13_q21_privacy_data_active_issues,
+          setValue: setS13_q21_privacy_data_active_issues,
+          mode: 'multi',
+        }
+      default:
+        return null
+    }
+  }
+
+  function handleS13Select(questionId, optionValue) {
+    const binding = getS13QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'single') {
+      return
+    }
+    binding.setValue(optionValue)
+  }
+
+  function handleS13Toggle(questionId, optionValue) {
+    const binding = getS13QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'multi') {
+      return
+    }
+
+    binding.setValue((prev) => {
+      if (questionId === 'q2' || questionId === 'q3' || questionId === 'q4') {
+        if (optionValue === 'not_sure') {
+          return prev.includes('not_sure') ? [] : ['not_sure']
+        }
+
+        const withoutNotSure = prev.filter((v) => v !== 'not_sure')
+        if (withoutNotSure.includes(optionValue)) {
+          return withoutNotSure.filter((v) => v !== optionValue)
+        }
+        return [...withoutNotSure, optionValue]
+      }
+
+      if (questionId === 'q21') {
+        if (optionValue === 'no_known_issues') {
+          return prev.includes('no_known_issues') ? [] : ['no_known_issues']
+        }
+
+        const withoutNoKnownIssues = prev.filter((v) => v !== 'no_known_issues')
+        if (withoutNoKnownIssues.includes(optionValue)) {
+          return withoutNoKnownIssues.filter((v) => v !== optionValue)
+        }
+        return [...withoutNoKnownIssues, optionValue]
+      }
+
+      if (prev.includes(optionValue)) {
+        return prev.filter((v) => v !== optionValue)
+      }
+      return [...prev, optionValue]
+    })
+  }
+
+  function handleS13Continue() {
+    const currentQuestionId = visibleS13QuestionIds[s13Step]
+    const question = getS13QuestionById(currentQuestionId)
+    const binding = getS13QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return
+    }
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
+      return
+    }
+
+    const nextState = buildDiagnosticState({ [question.field]: binding.value })
+    const nextTags = buildDiagnosticContext(nextState).tags
+    const escalation = resolveS13QuestionAnswer(currentQuestionId, nextState)
+
+    if (escalation) {
+      setS13AnswerEscalation((prev) => ({
+        ...prev,
+        [question.field]: escalation,
+      }))
+    }
+
+    if (currentQuestionId === 'q1' && shouldS13EarlyExit(nextState, nextTags)) {
+      setCurrentGate('s13-complete')
+      return
+    }
+
+    const nextVisibleIds = getVisibleS13QuestionIds(nextState, nextTags)
+    if (s13Step < nextVisibleIds.length - 1) {
+      setS13Step((prev) => prev + 1)
+      return
+    }
+
+    setCurrentGate('s13-complete')
   }
 
   function advanceToGate3() {
@@ -2712,6 +3109,18 @@ function App() {
     )
   }
 
+  if (currentGate === 's13-intro') {
+    return (
+      <SectionIntro
+        sectionId="S13"
+        onBegin={() => {
+          setS13Step(0)
+          setCurrentGate('s13')
+        }}
+      />
+    )
+  }
+
   if (currentGate === 's1') {
     const currentQuestionId = visibleS1QuestionIds[s1Step]
     const question = getS1QuestionById(currentQuestionId)
@@ -2834,6 +3243,31 @@ function App() {
 
   if (currentGate === 's27-complete') {
     return <S27SectionCompleteScreen />
+  }
+
+  if (currentGate === 's13') {
+    const currentQuestionId = visibleS13QuestionIds[s13Step]
+    const question = getS13QuestionById(currentQuestionId)
+    const binding = getS13QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S13QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS13Select(currentQuestionId, optionValue)}
+        onToggle={(optionValue) => handleS13Toggle(currentQuestionId, optionValue)}
+        onContinue={handleS13Continue}
+        onBack={goBackFromS13}
+      />
+    )
+  }
+
+  if (currentGate === 's13-complete') {
+    return <S13SectionCompleteScreen />
   }
 
   return null
