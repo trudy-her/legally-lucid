@@ -38,6 +38,14 @@ import {
   resolveS13QuestionAnswer,
   shouldS13EarlyExit,
 } from './section13Data.js'
+import {
+  computeS16DerivedFields,
+  getS16QuestionById,
+  getVisibleS16QuestionIds,
+  isS16Triggered,
+  resolveS16QuestionAnswer,
+  shouldS16EarlyExit,
+} from './section16Data.js'
 import { buildDiagnosticContext } from './diagnosticTags.js'
 import { getS1QuestionById, getVisibleS1QuestionIds } from './section1Data.js'
 import { getS2QuestionById, getVisibleS2QuestionIds } from './section2Data.js'
@@ -47,6 +55,7 @@ import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
 import { S3QuestionScreen, S3SectionCompleteScreen } from './S3Section.jsx'
 import { S27QuestionScreen, S27SectionCompleteScreen } from './S27Section.jsx'
 import { S13QuestionScreen, S13SectionCompleteScreen } from './S13Section.jsx'
+import { S16QuestionScreen, S16SectionCompleteScreen } from './S16Section.jsx'
 import { SectionIntro } from './SectionIntro.jsx'
 import {
   ContinueError,
@@ -1352,9 +1361,53 @@ function App() {
   const [s13_q20_internal_data_rules, setS13_q20_internal_data_rules] = useState(null)
   const [s13_q21_privacy_data_active_issues, setS13_q21_privacy_data_active_issues] =
     useState([])
-  const [s13_inherited_ai_data_use_signal, setS13_inherited_ai_data_use_signal] =
-    useState(false)
   const [s13AnswerEscalation, setS13AnswerEscalation] = useState({})
+  const [s16Step, setS16Step] = useState(0)
+  const [s16_q1_ai_use_status, setS16_q1_ai_use_status] = useState(null)
+  const [s16_q2_ai_use_cases, setS16_q2_ai_use_cases] = useState([])
+  const [s16_q3_direct_ai_interaction, setS16_q3_direct_ai_interaction] = useState(null)
+  const [s16_q4_ai_transparency_to_people, setS16_q4_ai_transparency_to_people] =
+    useState(null)
+  const [s16_q5_human_review_of_ai_outputs, setS16_q5_human_review_of_ai_outputs] =
+    useState(null)
+  const [s16_q6_ai_for_high_stakes_documents, setS16_q6_ai_for_high_stakes_documents] =
+    useState(null)
+  const [
+    s16_q7_sensitive_or_confidential_data_in_ai,
+    setS16_q7_sensitive_or_confidential_data_in_ai,
+  ] = useState(null)
+  const [
+    s16_q8_ai_vendors_plugins_agents_integrations,
+    setS16_q8_ai_vendors_plugins_agents_integrations,
+  ] = useState(null)
+  const [s16_q9_ai_vendor_terms_understood, setS16_q9_ai_vendor_terms_understood] =
+    useState(null)
+  const [
+    s16_q10_ai_privacy_security_settings_configured,
+    setS16_q10_ai_privacy_security_settings_configured,
+  ] = useState(null)
+  const [
+    s16_q11_ai_access_to_confidential_systems_data,
+    setS16_q11_ai_access_to_confidential_systems_data,
+  ] = useState(null)
+  const [
+    s16_q12_ai_outputs_in_public_or_funding_materials,
+    setS16_q12_ai_outputs_in_public_or_funding_materials,
+  ] = useState(null)
+  const [s16_q13_ai_decisions_about_people, setS16_q13_ai_decisions_about_people] =
+    useState(null)
+  const [s16_q14_ai_high_impact_contexts, setS16_q14_ai_high_impact_contexts] =
+    useState(null)
+  const [
+    s16_q15_ai_use_in_contracts_and_commitments,
+    setS16_q15_ai_use_in_contracts_and_commitments,
+  ] = useState(null)
+  const [
+    s16_q16_team_ai_guidelines_and_expectations,
+    setS16_q16_team_ai_guidelines_and_expectations,
+  ] = useState(null)
+  const [s16_q17_ai_active_issues, setS16_q17_ai_active_issues] = useState([])
+  const [s16AnswerEscalation, setS16AnswerEscalation] = useState({})
 
   const gateContext = useMemo(
     () => ({
@@ -1456,18 +1509,38 @@ function App() {
       s13_q19_data_request_process,
       s13_q20_internal_data_rules,
       s13_q21_privacy_data_active_issues,
-      s13_inherited_ai_data_use_signal,
       s13AnswerEscalation,
+      s16_q1_ai_use_status,
+      s16_q2_ai_use_cases,
+      s16_q3_direct_ai_interaction,
+      s16_q4_ai_transparency_to_people,
+      s16_q5_human_review_of_ai_outputs,
+      s16_q6_ai_for_high_stakes_documents,
+      s16_q7_sensitive_or_confidential_data_in_ai,
+      s16_q8_ai_vendors_plugins_agents_integrations,
+      s16_q9_ai_vendor_terms_understood,
+      s16_q10_ai_privacy_security_settings_configured,
+      s16_q11_ai_access_to_confidential_systems_data,
+      s16_q12_ai_outputs_in_public_or_funding_materials,
+      s16_q13_ai_decisions_about_people,
+      s16_q14_ai_high_impact_contexts,
+      s16_q15_ai_use_in_contracts_and_commitments,
+      s16_q16_team_ai_guidelines_and_expectations,
+      s16_q17_ai_active_issues,
+      s16AnswerEscalation,
       diagnosticStoppedAtBoundary: false,
       ...overrides,
     }
 
     const tags = buildDiagnosticContext(baseState).tags
+    const s16Derived = computeS16DerivedFields(baseState, tags)
     const s13Derived = computeS13DerivedFields(baseState, tags)
 
     return {
       ...baseState,
+      ...s16Derived,
       ...s13Derived,
+      s13_inherited_ai_data_use_signal: s16Derived.s16_q7_sensitive_data_flag,
       s27_strong_capital_signal: computeS27StrongCapitalSignal(baseState, tags),
     }
   }
@@ -1552,8 +1625,25 @@ function App() {
       s13_q19_data_request_process,
       s13_q20_internal_data_rules,
       s13_q21_privacy_data_active_issues,
-      s13_inherited_ai_data_use_signal,
       s13AnswerEscalation,
+      s16_q1_ai_use_status,
+      s16_q2_ai_use_cases,
+      s16_q3_direct_ai_interaction,
+      s16_q4_ai_transparency_to_people,
+      s16_q5_human_review_of_ai_outputs,
+      s16_q6_ai_for_high_stakes_documents,
+      s16_q7_sensitive_or_confidential_data_in_ai,
+      s16_q8_ai_vendors_plugins_agents_integrations,
+      s16_q9_ai_vendor_terms_understood,
+      s16_q10_ai_privacy_security_settings_configured,
+      s16_q11_ai_access_to_confidential_systems_data,
+      s16_q12_ai_outputs_in_public_or_funding_materials,
+      s16_q13_ai_decisions_about_people,
+      s16_q14_ai_high_impact_contexts,
+      s16_q15_ai_use_in_contracts_and_commitments,
+      s16_q16_team_ai_guidelines_and_expectations,
+      s16_q17_ai_active_issues,
+      s16AnswerEscalation,
     ],
   )
 
@@ -1599,6 +1689,16 @@ function App() {
 
   const visibleS13QuestionIds = useMemo(
     () => getVisibleS13QuestionIds(diagnosticState, diagnosticContext.tags),
+    [diagnosticState, diagnosticContext.tags],
+  )
+
+  const s16Triggered = useMemo(
+    () => isS16Triggered(diagnosticState, diagnosticContext.tags),
+    [diagnosticState, diagnosticContext.tags],
+  )
+
+  const visibleS16QuestionIds = useMemo(
+    () => getVisibleS16QuestionIds(diagnosticState, diagnosticContext.tags),
     [diagnosticState, diagnosticContext.tags],
   )
 
@@ -1763,8 +1863,26 @@ function App() {
     setS13_q19_data_request_process(null)
     setS13_q20_internal_data_rules(null)
     setS13_q21_privacy_data_active_issues([])
-    setS13_inherited_ai_data_use_signal(false)
     setS13AnswerEscalation({})
+    setS16Step(0)
+    setS16_q1_ai_use_status(null)
+    setS16_q2_ai_use_cases([])
+    setS16_q3_direct_ai_interaction(null)
+    setS16_q4_ai_transparency_to_people(null)
+    setS16_q5_human_review_of_ai_outputs(null)
+    setS16_q6_ai_for_high_stakes_documents(null)
+    setS16_q7_sensitive_or_confidential_data_in_ai(null)
+    setS16_q8_ai_vendors_plugins_agents_integrations(null)
+    setS16_q9_ai_vendor_terms_understood(null)
+    setS16_q10_ai_privacy_security_settings_configured(null)
+    setS16_q11_ai_access_to_confidential_systems_data(null)
+    setS16_q12_ai_outputs_in_public_or_funding_materials(null)
+    setS16_q13_ai_decisions_about_people(null)
+    setS16_q14_ai_high_impact_contexts(null)
+    setS16_q15_ai_use_in_contracts_and_commitments(null)
+    setS16_q16_team_ai_guidelines_and_expectations(null)
+    setS16_q17_ai_active_issues([])
+    setS16AnswerEscalation({})
     setCurrentGate(1)
   }
 
@@ -1903,12 +2021,25 @@ function App() {
     setCurrentGate('s13-intro')
   }
 
+  function advanceToS16Intro() {
+    setS16Step(0)
+    setCurrentGate('s16-intro')
+  }
+
   function goBackFromS13() {
     if (s13Step > 0) {
       setS13Step((prev) => prev - 1)
       return
     }
     setCurrentGate('s13-intro')
+  }
+
+  function goBackFromS16() {
+    if (s16Step > 0) {
+      setS16Step((prev) => prev - 1)
+      return
+    }
+    setCurrentGate('s16-intro')
   }
 
   function goBackFromGate() {
@@ -2196,6 +2327,10 @@ function App() {
       advanceToS13Intro()
       return
     }
+    if (s16Triggered) {
+      advanceToS16Intro()
+      return
+    }
     setCurrentGate('s3-complete')
   }
 
@@ -2472,6 +2607,10 @@ function App() {
       advanceToS13Intro()
       return
     }
+    if (s16Triggered) {
+      advanceToS16Intro()
+      return
+    }
     setCurrentGate('s6-complete')
   }
 
@@ -2635,6 +2774,11 @@ function App() {
 
     if (isS13Triggered(nextState, nextTags)) {
       advanceToS13Intro()
+      return
+    }
+
+    if (isS16Triggered(nextState, nextTags)) {
+      advanceToS16Intro()
       return
     }
 
@@ -2849,6 +2993,10 @@ function App() {
     }
 
     if (currentQuestionId === 'q1' && shouldS13EarlyExit(nextState, nextTags)) {
+      if (isS16Triggered(nextState, nextTags)) {
+        advanceToS16Intro()
+        return
+      }
       setCurrentGate('s13-complete')
       return
     }
@@ -2859,7 +3007,209 @@ function App() {
       return
     }
 
+    if (isS16Triggered(nextState, nextTags)) {
+      advanceToS16Intro()
+      return
+    }
+
     setCurrentGate('s13-complete')
+  }
+
+  function getS16QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s16_q1_ai_use_status,
+          setValue: setS16_q1_ai_use_status,
+          mode: 'single',
+        }
+      case 'q2':
+        return {
+          value: s16_q2_ai_use_cases,
+          setValue: setS16_q2_ai_use_cases,
+          mode: 'multi',
+        }
+      case 'q3':
+        return {
+          value: s16_q3_direct_ai_interaction,
+          setValue: setS16_q3_direct_ai_interaction,
+          mode: 'single',
+        }
+      case 'q4':
+        return {
+          value: s16_q4_ai_transparency_to_people,
+          setValue: setS16_q4_ai_transparency_to_people,
+          mode: 'single',
+        }
+      case 'q5':
+        return {
+          value: s16_q5_human_review_of_ai_outputs,
+          setValue: setS16_q5_human_review_of_ai_outputs,
+          mode: 'single',
+        }
+      case 'q6':
+        return {
+          value: s16_q6_ai_for_high_stakes_documents,
+          setValue: setS16_q6_ai_for_high_stakes_documents,
+          mode: 'single',
+        }
+      case 'q7':
+        return {
+          value: s16_q7_sensitive_or_confidential_data_in_ai,
+          setValue: setS16_q7_sensitive_or_confidential_data_in_ai,
+          mode: 'single',
+        }
+      case 'q8':
+        return {
+          value: s16_q8_ai_vendors_plugins_agents_integrations,
+          setValue: setS16_q8_ai_vendors_plugins_agents_integrations,
+          mode: 'single',
+        }
+      case 'q9':
+        return {
+          value: s16_q9_ai_vendor_terms_understood,
+          setValue: setS16_q9_ai_vendor_terms_understood,
+          mode: 'single',
+        }
+      case 'q10':
+        return {
+          value: s16_q10_ai_privacy_security_settings_configured,
+          setValue: setS16_q10_ai_privacy_security_settings_configured,
+          mode: 'single',
+        }
+      case 'q11':
+        return {
+          value: s16_q11_ai_access_to_confidential_systems_data,
+          setValue: setS16_q11_ai_access_to_confidential_systems_data,
+          mode: 'single',
+        }
+      case 'q12':
+        return {
+          value: s16_q12_ai_outputs_in_public_or_funding_materials,
+          setValue: setS16_q12_ai_outputs_in_public_or_funding_materials,
+          mode: 'single',
+        }
+      case 'q13':
+        return {
+          value: s16_q13_ai_decisions_about_people,
+          setValue: setS16_q13_ai_decisions_about_people,
+          mode: 'single',
+        }
+      case 'q14':
+        return {
+          value: s16_q14_ai_high_impact_contexts,
+          setValue: setS16_q14_ai_high_impact_contexts,
+          mode: 'single',
+        }
+      case 'q15':
+        return {
+          value: s16_q15_ai_use_in_contracts_and_commitments,
+          setValue: setS16_q15_ai_use_in_contracts_and_commitments,
+          mode: 'single',
+        }
+      case 'q16':
+        return {
+          value: s16_q16_team_ai_guidelines_and_expectations,
+          setValue: setS16_q16_team_ai_guidelines_and_expectations,
+          mode: 'single',
+        }
+      case 'q17':
+        return {
+          value: s16_q17_ai_active_issues,
+          setValue: setS16_q17_ai_active_issues,
+          mode: 'multi',
+        }
+      default:
+        return null
+    }
+  }
+
+  function handleS16Select(questionId, optionValue) {
+    const binding = getS16QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'single') {
+      return
+    }
+    binding.setValue(optionValue)
+  }
+
+  function handleS16Toggle(questionId, optionValue) {
+    const binding = getS16QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'multi') {
+      return
+    }
+
+    binding.setValue((prev) => {
+      if (questionId === 'q2') {
+        if (optionValue === 'not_sure') {
+          return prev.includes('not_sure') ? [] : ['not_sure']
+        }
+
+        const withoutNotSure = prev.filter((v) => v !== 'not_sure')
+        if (withoutNotSure.includes(optionValue)) {
+          return withoutNotSure.filter((v) => v !== optionValue)
+        }
+        return [...withoutNotSure, optionValue]
+      }
+
+      if (questionId === 'q17') {
+        if (optionValue === 'no_known_issues') {
+          return prev.includes('no_known_issues') ? [] : ['no_known_issues']
+        }
+
+        const withoutNoKnownIssues = prev.filter((v) => v !== 'no_known_issues')
+        if (withoutNoKnownIssues.includes(optionValue)) {
+          return withoutNoKnownIssues.filter((v) => v !== optionValue)
+        }
+        return [...withoutNoKnownIssues, optionValue]
+      }
+
+      if (prev.includes(optionValue)) {
+        return prev.filter((v) => v !== optionValue)
+      }
+      return [...prev, optionValue]
+    })
+  }
+
+  function handleS16Continue() {
+    const currentQuestionId = visibleS16QuestionIds[s16Step]
+    const question = getS16QuestionById(currentQuestionId)
+    const binding = getS16QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return
+    }
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
+      return
+    }
+
+    const nextState = buildDiagnosticState({ [question.field]: binding.value })
+    const nextTags = buildDiagnosticContext(nextState).tags
+    const escalation = resolveS16QuestionAnswer(currentQuestionId, nextState)
+
+    if (escalation) {
+      setS16AnswerEscalation((prev) => ({
+        ...prev,
+        [question.field]: escalation,
+      }))
+    }
+
+    if (currentQuestionId === 'q1' && shouldS16EarlyExit(nextState, nextTags)) {
+      setCurrentGate('s16-complete')
+      return
+    }
+
+    const nextVisibleIds = getVisibleS16QuestionIds(nextState, nextTags)
+    if (s16Step < nextVisibleIds.length - 1) {
+      setS16Step((prev) => prev + 1)
+      return
+    }
+
+    setCurrentGate('s16-complete')
   }
 
   function advanceToGate3() {
@@ -3121,6 +3471,18 @@ function App() {
     )
   }
 
+  if (currentGate === 's16-intro') {
+    return (
+      <SectionIntro
+        sectionId="S16"
+        onBegin={() => {
+          setS16Step(0)
+          setCurrentGate('s16')
+        }}
+      />
+    )
+  }
+
   if (currentGate === 's1') {
     const currentQuestionId = visibleS1QuestionIds[s1Step]
     const question = getS1QuestionById(currentQuestionId)
@@ -3268,6 +3630,31 @@ function App() {
 
   if (currentGate === 's13-complete') {
     return <S13SectionCompleteScreen />
+  }
+
+  if (currentGate === 's16') {
+    const currentQuestionId = visibleS16QuestionIds[s16Step]
+    const question = getS16QuestionById(currentQuestionId)
+    const binding = getS16QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S16QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS16Select(currentQuestionId, optionValue)}
+        onToggle={(optionValue) => handleS16Toggle(currentQuestionId, optionValue)}
+        onContinue={handleS16Continue}
+        onBack={goBackFromS16}
+      />
+    )
+  }
+
+  if (currentGate === 's16-complete') {
+    return <S16SectionCompleteScreen />
   }
 
   return null

@@ -50,6 +50,13 @@ Answer based on what is true today and what you are planning next. You do not ne
 
 Answer at a high level based on what is true today. Do not enter customer data, donor data, employee data, health information, names, exact counts, or confidential narratives.`,
   },
+  {
+    sectionId: 'S16',
+    name: 'AI, Automation, and Technology Transparency',
+    intro: `This section looks at how your business uses AI, automation, and connected technology tools.
+
+Answer based on what is true today and what you are planning next. Do not enter names, confidential narratives, prompts, or detailed descriptions of sensitive issues.`,
+  },
 ]
 
 export function getSectionIntro(sectionId) {

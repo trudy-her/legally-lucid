@@ -1288,7 +1288,7 @@ export function computeS13DerivedFields(state, tags) {
     s13_early_exit: shouldS13EarlyExit(state, tags),
     s13_q10_weak_transparency: computeS13Q10WeakTransparency(state),
     s13_q12_escalated: computeS13Q12Escalated(state),
-    s13_inherited_ai_data_use_signal: Boolean(state.s13_inherited_ai_data_use_signal),
+    s13_inherited_ai_data_use_signal: false,
   }
 }
 
