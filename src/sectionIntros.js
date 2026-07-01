@@ -30,6 +30,13 @@ You do not need to know every intellectual property term to answer these questio
 Answer based on how your offer works today and what you are planning next. The point is to help your Map connect your actual business model to the right next steps.`,
   },
   {
+    sectionId: 'S5',
+    name: 'Public Claims, Marketing Language, and Fundraising Language',
+    intro: `This section screens public-facing language at a high level — where you publish, what kinds of statements you make, and whether review or records may need attention.
+
+Select broad categories only. Do not paste copy, screenshots, links, posts, ads, testimonials, or confidential details.`,
+  },
+  {
     sectionId: 'S6',
     name: 'Contracts, Agreements, and Commitment Readiness',
     intro: `This section looks at the commitments your business has made or is planning to make, including written contracts, informal promises, vendor terms, grants, sponsorships, fiscal sponsor arrangements, customer terms, donor commitments, and platform terms.

@@ -24,6 +24,15 @@ import {
   resolveS6QuestionAnswer,
 } from './section6Data.js'
 import {
+  applyS5MultiSelectExclusivity,
+  computeS5DerivedFields,
+  getS5QuestionById,
+  getVisibleS5QuestionIds,
+  isS5Triggered,
+  resolveS5QuestionAnswer,
+  shouldS5EarlyExit,
+} from './section5Data.js'
+import {
   computeS27StrongCapitalSignal,
   getS27QuestionById,
   getVisibleS27QuestionIds,
@@ -53,6 +62,7 @@ import { getS3QuestionById, getVisibleS3QuestionIds } from './section3Data.js'
 import { S1QuestionScreen, S1SectionCompleteScreen } from './S1Section.jsx'
 import { S2QuestionScreen, S2SectionCompleteScreen } from './S2Section.jsx'
 import { S3QuestionScreen, S3SectionCompleteScreen } from './S3Section.jsx'
+import { S5QuestionScreen, S5SectionCompleteScreen } from './S5Section.jsx'
 import { S27QuestionScreen, S27SectionCompleteScreen } from './S27Section.jsx'
 import { S13QuestionScreen, S13SectionCompleteScreen } from './S13Section.jsx'
 import { S16QuestionScreen, S16SectionCompleteScreen } from './S16Section.jsx'
@@ -1225,6 +1235,40 @@ function App() {
     useState(null)
   const [s3_q13_active_offer_related_issues, setS3_q13_active_offer_related_issues] =
     useState([])
+  const [s5Step, setS5Step] = useState(0)
+  const [s5_q1_public_facing_channels, setS5_q1_public_facing_channels] = useState([])
+  const [s5_q2_public_statement_types, setS5_q2_public_statement_types] = useState([])
+  const [s5_q3_review_process, setS5_q3_review_process] = useState(null)
+  const [s5_q4_claim_support_records, setS5_q4_claim_support_records] = useState(null)
+  const [s5_q5_results_outcome_statements, setS5_q5_results_outcome_statements] = useState([])
+  const [s5_q6_testimonials_social_proof, setS5_q6_testimonials_social_proof] = useState([])
+  const [
+    s5_q7_credentials_authority_affiliations,
+    setS5_q7_credentials_authority_affiliations,
+  ] = useState([])
+  const [
+    s5_q8_money_pricing_fundraising_statements,
+    setS5_q8_money_pricing_fundraising_statements,
+  ] = useState([])
+  const [s5_q9_sponsor_funder_recognition, setS5_q9_sponsor_funder_recognition] = useState([])
+  const [
+    s5_q10_ai_privacy_security_tech_statements,
+    setS5_q10_ai_privacy_security_tech_statements,
+  ] = useState([])
+  const [
+    s5_q11_health_wellness_safety_statements,
+    setS5_q11_health_wellness_safety_statements,
+  ] = useState([])
+  const [
+    s5_q12_availability_timeline_statements,
+    setS5_q12_availability_timeline_statements,
+  ] = useState([])
+  const [s5_q13_language_reuse_across_channels, setS5_q13_language_reuse_across_channels] =
+    useState(null)
+  const [s5_q14_ai_assisted_public_content, setS5_q14_ai_assisted_public_content] = useState([])
+  const [s5_q15_who_publishes_approves, setS5_q15_who_publishes_approves] = useState([])
+  const [s5_q16_active_public_issue, setS5_q16_active_public_issue] = useState([])
+  const [s5AnswerEscalation, setS5AnswerEscalation] = useState({})
   const [s6Step, setS6Step] = useState(0)
   const [s6_q1_informal_commitments_documented, setS6_q1_informal_commitments_documented] =
     useState(null)
@@ -1439,6 +1483,8 @@ function App() {
       growth_path,
       recent_events_12mo,
       ai_use,
+      sensitive_claims,
+      s30_inherited_signals: null,
       s1_q1_current_stage,
       s1_q2_current_structure,
       s2_q1_public_names_brands_products_programs,
@@ -1459,6 +1505,23 @@ function App() {
       s3_q1_offer_type,
       s3_q2_primary_audience_or_recipient,
       s3_q6_paid_free_beta_pilot_trial_status,
+      s5_q1_public_facing_channels,
+      s5_q2_public_statement_types,
+      s5_q3_review_process,
+      s5_q4_claim_support_records,
+      s5_q5_results_outcome_statements,
+      s5_q6_testimonials_social_proof,
+      s5_q7_credentials_authority_affiliations,
+      s5_q8_money_pricing_fundraising_statements,
+      s5_q9_sponsor_funder_recognition,
+      s5_q10_ai_privacy_security_tech_statements,
+      s5_q11_health_wellness_safety_statements,
+      s5_q12_availability_timeline_statements,
+      s5_q13_language_reuse_across_channels,
+      s5_q14_ai_assisted_public_content,
+      s5_q15_who_publishes_approves,
+      s5_q16_active_public_issue,
+      s5AnswerEscalation,
       s6_q1_informal_commitments_documented,
       s6_q2_avoids_written_agreements,
       s6_q3_agreement_source,
@@ -1533,11 +1596,13 @@ function App() {
     }
 
     const tags = buildDiagnosticContext(baseState).tags
+    const s5Derived = computeS5DerivedFields(baseState)
     const s16Derived = computeS16DerivedFields(baseState, tags)
     const s13Derived = computeS13DerivedFields(baseState, tags)
 
     return {
       ...baseState,
+      ...s5Derived,
       ...s16Derived,
       ...s13Derived,
       s13_inherited_ai_data_use_signal: s16Derived.s16_q7_sensitive_data_flag,
@@ -1555,6 +1620,7 @@ function App() {
       growth_path,
       recent_events_12mo,
       ai_use,
+      sensitive_claims,
       s1_q1_current_stage,
       s1_q2_current_structure,
       s2_q1_public_names_brands_products_programs,
@@ -1575,6 +1641,23 @@ function App() {
       s3_q1_offer_type,
       s3_q2_primary_audience_or_recipient,
       s3_q6_paid_free_beta_pilot_trial_status,
+      s5_q1_public_facing_channels,
+      s5_q2_public_statement_types,
+      s5_q3_review_process,
+      s5_q4_claim_support_records,
+      s5_q5_results_outcome_statements,
+      s5_q6_testimonials_social_proof,
+      s5_q7_credentials_authority_affiliations,
+      s5_q8_money_pricing_fundraising_statements,
+      s5_q9_sponsor_funder_recognition,
+      s5_q10_ai_privacy_security_tech_statements,
+      s5_q11_health_wellness_safety_statements,
+      s5_q12_availability_timeline_statements,
+      s5_q13_language_reuse_across_channels,
+      s5_q14_ai_assisted_public_content,
+      s5_q15_who_publishes_approves,
+      s5_q16_active_public_issue,
+      s5AnswerEscalation,
       s6_q1_informal_commitments_documented,
       s6_q2_avoids_written_agreements,
       s6_q3_agreement_source,
@@ -1665,6 +1748,16 @@ function App() {
   const visibleS3QuestionIds = useMemo(
     () => getVisibleS3QuestionIds(diagnosticContext),
     [diagnosticContext],
+  )
+
+  const s5Triggered = useMemo(
+    () => isS5Triggered(diagnosticState, diagnosticContext.tags),
+    [diagnosticState, diagnosticContext.tags],
+  )
+
+  const visibleS5QuestionIds = useMemo(
+    () => getVisibleS5QuestionIds(diagnosticState),
+    [diagnosticState],
   )
 
   const visibleS6QuestionIds = useMemo(
@@ -1810,6 +1903,24 @@ function App() {
     setS3_q11_partner_sponsor_affiliate_or_third_party_delivery(null)
     setS3_q12_offer_records_for_diligence_or_review(null)
     setS3_q13_active_offer_related_issues([])
+    setS5Step(0)
+    setS5_q1_public_facing_channels([])
+    setS5_q2_public_statement_types([])
+    setS5_q3_review_process(null)
+    setS5_q4_claim_support_records(null)
+    setS5_q5_results_outcome_statements([])
+    setS5_q6_testimonials_social_proof([])
+    setS5_q7_credentials_authority_affiliations([])
+    setS5_q8_money_pricing_fundraising_statements([])
+    setS5_q9_sponsor_funder_recognition([])
+    setS5_q10_ai_privacy_security_tech_statements([])
+    setS5_q11_health_wellness_safety_statements([])
+    setS5_q12_availability_timeline_statements([])
+    setS5_q13_language_reuse_across_channels(null)
+    setS5_q14_ai_assisted_public_content([])
+    setS5_q15_who_publishes_approves([])
+    setS5_q16_active_public_issue([])
+    setS5AnswerEscalation({})
     setS6Step(0)
     setS6_q1_informal_commitments_documented(null)
     setS6_q2_avoids_written_agreements(null)
@@ -2003,12 +2114,25 @@ function App() {
     setCurrentGate('s6-intro')
   }
 
+  function goBackFromS5() {
+    if (s5Step > 0) {
+      setS5Step((prev) => prev - 1)
+      return
+    }
+    setCurrentGate('s5-intro')
+  }
+
   function goBackFromS27() {
     if (s27Step > 0) {
       setS27Step((prev) => prev - 1)
       return
     }
     setCurrentGate('s27-intro')
+  }
+
+  function advanceToS5Intro() {
+    setS5Step(0)
+    setCurrentGate('s5-intro')
   }
 
   function advanceToS27Intro() {
@@ -2314,6 +2438,10 @@ function App() {
       setS3Step((prev) => prev + 1)
       return
     }
+    if (s5Triggered) {
+      advanceToS5Intro()
+      return
+    }
     if (s6Triggered) {
       setS6Step(0)
       setCurrentGate('s6-intro')
@@ -2459,6 +2587,188 @@ function App() {
     }
 
     advanceAfterS2Answer(question, binding.value)
+  }
+
+  function getS5QuestionBinding(questionId) {
+    switch (questionId) {
+      case 'q1':
+        return {
+          value: s5_q1_public_facing_channels,
+          setValue: setS5_q1_public_facing_channels,
+          mode: 'multi',
+        }
+      case 'q2':
+        return {
+          value: s5_q2_public_statement_types,
+          setValue: setS5_q2_public_statement_types,
+          mode: 'multi',
+        }
+      case 'q3':
+        return {
+          value: s5_q3_review_process,
+          setValue: setS5_q3_review_process,
+          mode: 'single',
+        }
+      case 'q4':
+        return {
+          value: s5_q4_claim_support_records,
+          setValue: setS5_q4_claim_support_records,
+          mode: 'single',
+        }
+      case 'q5':
+        return {
+          value: s5_q5_results_outcome_statements,
+          setValue: setS5_q5_results_outcome_statements,
+          mode: 'multi',
+        }
+      case 'q6':
+        return {
+          value: s5_q6_testimonials_social_proof,
+          setValue: setS5_q6_testimonials_social_proof,
+          mode: 'multi',
+        }
+      case 'q7':
+        return {
+          value: s5_q7_credentials_authority_affiliations,
+          setValue: setS5_q7_credentials_authority_affiliations,
+          mode: 'multi',
+        }
+      case 'q8':
+        return {
+          value: s5_q8_money_pricing_fundraising_statements,
+          setValue: setS5_q8_money_pricing_fundraising_statements,
+          mode: 'multi',
+        }
+      case 'q9':
+        return {
+          value: s5_q9_sponsor_funder_recognition,
+          setValue: setS5_q9_sponsor_funder_recognition,
+          mode: 'multi',
+        }
+      case 'q10':
+        return {
+          value: s5_q10_ai_privacy_security_tech_statements,
+          setValue: setS5_q10_ai_privacy_security_tech_statements,
+          mode: 'multi',
+        }
+      case 'q11':
+        return {
+          value: s5_q11_health_wellness_safety_statements,
+          setValue: setS5_q11_health_wellness_safety_statements,
+          mode: 'multi',
+        }
+      case 'q12':
+        return {
+          value: s5_q12_availability_timeline_statements,
+          setValue: setS5_q12_availability_timeline_statements,
+          mode: 'multi',
+        }
+      case 'q13':
+        return {
+          value: s5_q13_language_reuse_across_channels,
+          setValue: setS5_q13_language_reuse_across_channels,
+          mode: 'single',
+        }
+      case 'q14':
+        return {
+          value: s5_q14_ai_assisted_public_content,
+          setValue: setS5_q14_ai_assisted_public_content,
+          mode: 'multi',
+        }
+      case 'q15':
+        return {
+          value: s5_q15_who_publishes_approves,
+          setValue: setS5_q15_who_publishes_approves,
+          mode: 'multi',
+        }
+      case 'q16':
+        return {
+          value: s5_q16_active_public_issue,
+          setValue: setS5_q16_active_public_issue,
+          mode: 'multi',
+        }
+      default:
+        return null
+    }
+  }
+
+  function handleS5Select(questionId, optionValue) {
+    const binding = getS5QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'single') {
+      return
+    }
+    binding.setValue(optionValue)
+  }
+
+  function handleS5Toggle(questionId, optionValue) {
+    const binding = getS5QuestionBinding(questionId)
+    if (!binding || binding.mode !== 'multi') {
+      return
+    }
+
+    binding.setValue((prev) => applyS5MultiSelectExclusivity(questionId, prev, optionValue))
+  }
+
+  function advanceAfterS5() {
+    if (s6Triggered) {
+      setS6Step(0)
+      setCurrentGate('s6-intro')
+      return
+    }
+    if (s27Triggered) {
+      advanceToS27Intro()
+      return
+    }
+    if (s13Triggered) {
+      advanceToS13Intro()
+      return
+    }
+    if (s16Triggered) {
+      advanceToS16Intro()
+      return
+    }
+    setCurrentGate('s5-complete')
+  }
+
+  function handleS5Continue() {
+    const currentQuestionId = visibleS5QuestionIds[s5Step]
+    const question = getS5QuestionById(currentQuestionId)
+    const binding = getS5QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return
+    }
+
+    if (binding.mode === 'multi') {
+      if (binding.value.length === 0) {
+        return
+      }
+    } else if (!binding.value) {
+      return
+    }
+
+    const nextState = buildDiagnosticState({ [question.field]: binding.value })
+    const escalation = resolveS5QuestionAnswer(currentQuestionId, nextState)
+
+    if (escalation) {
+      setS5AnswerEscalation((prev) => ({
+        ...prev,
+        [question.field]: escalation,
+      }))
+    }
+
+    if (currentQuestionId === 'q1' && shouldS5EarlyExit(nextState)) {
+      setCurrentGate('s5-complete')
+      return
+    }
+
+    const nextVisibleIds = getVisibleS5QuestionIds(nextState)
+    if (s5Step < nextVisibleIds.length - 1) {
+      setS5Step((prev) => prev + 1)
+      return
+    }
+
+    advanceAfterS5()
   }
 
   function getS6QuestionBinding(questionId) {
@@ -3435,6 +3745,18 @@ function App() {
     )
   }
 
+  if (currentGate === 's5-intro') {
+    return (
+      <SectionIntro
+        sectionId="S5"
+        onBegin={() => {
+          setS5Step(0)
+          setCurrentGate('s5')
+        }}
+      />
+    )
+  }
+
   if (currentGate === 's6-intro') {
     return (
       <SectionIntro
@@ -3555,6 +3877,31 @@ function App() {
 
   if (currentGate === 's3-complete') {
     return <S3SectionCompleteScreen />
+  }
+
+  if (currentGate === 's5') {
+    const currentQuestionId = visibleS5QuestionIds[s5Step]
+    const question = getS5QuestionById(currentQuestionId)
+    const binding = getS5QuestionBinding(currentQuestionId)
+
+    if (!question || !binding) {
+      return null
+    }
+
+    return (
+      <S5QuestionScreen
+        question={question}
+        value={binding.value}
+        onSelect={(optionValue) => handleS5Select(currentQuestionId, optionValue)}
+        onToggle={(optionValue) => handleS5Toggle(currentQuestionId, optionValue)}
+        onContinue={handleS5Continue}
+        onBack={goBackFromS5}
+      />
+    )
+  }
+
+  if (currentGate === 's5-complete') {
+    return <S5SectionCompleteScreen />
   }
 
   if (currentGate === 's6') {

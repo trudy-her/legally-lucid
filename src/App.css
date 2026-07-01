@@ -86,6 +86,45 @@
   gap: 12px;
 }
 
+.gate__options-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gate__option-group-divider {
+  height: 2px;
+  background: var(--line);
+  border-radius: 1px;
+  margin: 4px 0;
+}
+
+.gate__sticky-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gate__expand-toggle {
+  align-self: flex-start;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--gold-deep);
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gate__expand-toggle:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
+}
+
 .gate__option {
   display: flex;
   flex-direction: column;
